@@ -40,7 +40,7 @@ library(googledrive)
 ```
 
 ```{r set project variables, read zipped files, list available files, warning = FALSE, echo=FALSE}
-Project <- "Baltic_Photoperiod"
+Project <- "SynBaltic"
 DataOut <- file.path("..", "Data", "ImportedData", "ImportedJazEmData")
 
 # Set the path to the zip folder and the destination folder
@@ -104,8 +104,8 @@ mutate(ObsDate = ymd(ObsDate),
 # Select wavelength range from 400 to 700 nm
 
 ```{r select range of nm}
-JazSpecTrim <- JazSpec %>% 
-  subset(JazSpec$Wavelength >= 400 & JazSpec$Wavelength <= 701)
+JazSpecTrim <- JazSpec 
+  #subset(JazSpec$Wavelength >= 400 & JazSpec$Wavelength <= 701)
 ```
 
 # Remove all NA columns & empty rows, fix column types
