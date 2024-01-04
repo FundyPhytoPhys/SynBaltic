@@ -117,6 +117,10 @@ MultiCultiGrowthTrans<-MultiCultiGrowth %>%
         Strain=="BA56G"~"PC-rich_056",
          Strain=="BA77G"~"PC-rich_077"))
 
+
+MultiCultiGrowthPro<-MultiCultiGrowth %>% 
+  filter(Run == 66 | Run == 69 | Run == 72) %>% 
+  filter(WL== 405)
 ```
 
 # Load processed Olis&Jaz RDS
@@ -224,10 +228,24 @@ ggsave(file = file.path(PlotsPath, paste("GrowthRateColour_Plot",".png",sep = ""
 ```
 
 
+# Create preliminary plot - colour
+
+```{r preliminary plot, warning = FALSE}
+MultiCultiGrowthPro %>%
+  ggplot() +
+  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = F) +
+  # geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5, width = 0) +
+  # scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
+  ggh4x::facet_nested(rows = vars(Strain), cols = vars(WL, Par_ue)) +
+  theme_bw()
+```
 
 
+# Save plot 
 
-
+```{r save plot}
+ggsave(file = file.path(PlotsPath, paste("GrowthRatePro_Plot",".png",sep = "")), height=10, width= 8,  dpi = 300, limitsize = TRUE)
+```
 
 # Calculated Anova and Tukey test
 
