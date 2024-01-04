@@ -53,7 +53,7 @@ library(tidyverse)
 ```
 
 ```{r set project variables}
-Project <- "Baltic_Photoperiod"
+Project <- "SynBaltic"
 DataOut <- file.path("..", "Data", "ProcessedData", "ProcessedGrowthRateData")
 DataIn <- file.path("..", "Data", "CleanData", "CleanedMCData", fsep = .Platform$file.sep)
 
@@ -288,49 +288,6 @@ MCGrowthRateExp <- MCGrowthRate %>%
 rm(MCCleanGrowthAPUR, MCGrowthRate)
 ```
 
-# Load tmaxAG catalog 
-
-```{r}
-gs4_deauth()
-tmaxAG<- read_sheet("https://docs.google.com/spreadsheets/d/1ksY7xlg9wOsICOBRmZkHPKdd9KOislNwPDzyuJ3UIUI/edit#gid=0")
-as.data.frame(tmaxAG)
-tmaxAG <- tmaxAG
-
-tmaxAG<-tmaxAG %>% 
-  mutate(Par_ue = as.numeric(Par_ue)) %>%
-  mutate(Photoperiod = as.numeric(Photoperiod)) %>%
-  mutate(tMaxAG = as.numeric(tMaxAG)) %>%
-  mutate(dayRound_tmaxAG=tMaxAG/24) %>% 
-  mutate(dayRound_tmaxAG = round(dayRound_tmaxAG, digits = 0)) %>% 
-  mutate(Strain=case_when(Strain=="BA127R"~"PE-rich_127",
-         Strain=="BA48R"~"PE-rich_048",
-        Strain=="BA56G"~"PC-rich_056",
-         Strain=="BA77G"~"PC-rich_077"))
-
-tmaxAG$facetsPar_ue = factor(tmaxAG$O2, labels = c("PAR~(µmol~photons~m^{-2}~s^{-1})"))
-tmaxAG$facetsPhotoperiod = factor(tmaxAG$WL, labels = c("Photoperiod~(h)"))
-tmaxAG$facetsStrain = factor(tmaxAG$O2, labels = c("Strain"))
-tmaxAG$facetsPARPhotonDose_day = factor(tmaxAG$WL, labels = c("PAR~photon~dose~(10^{5}~µmol~photons~m^{-2}~d^{-1})"))
-```
-
-```{r select revelant columns}
-tMaxAGLines_056<-tmaxAG %>% 
-  filter(Strain == "PC-rich_056") %>% 
-  dplyr::select(c(Par_ue, Photoperiod, tMaxAG)) %>% 
-  unique()
-tMaxAGLines_077<-tmaxAG %>% 
-  filter(Strain == "PC-rich_077") %>% 
-  dplyr::select(c(Par_ue, Photoperiod, tMaxAG)) %>% 
-  unique()
-tMaxAGLines_048<-tmaxAG %>% 
-  filter(Strain == "PE-rich_048") %>% 
-  dplyr::select(c(Par_ue, Photoperiod, tMaxAG)) %>% 
-  unique()
-tMaxAGLines_127<-tmaxAG %>% 
-  filter(Strain == "PE-rich_127") %>% 
-  dplyr::select(c(Par_ue, Photoperiod, tMaxAG)) %>% 
-  unique()
-```
 
 # Create preliminary plots
 
@@ -340,10 +297,6 @@ lab1=c(expression("PC-rich_056"), expression("PC-rich_077"), expression("PE-rich
 MCGrowthRateExp %>%
   ggplot() +
   geom_point(aes(x = E_hours, y = PURPARRatio, colour = as.factor(Strain)), alpha = 0.9, size = 3, show.legend = T) +
-  geom_vline(data = tMaxAGLines_056, aes(xintercept = tMaxAG), linetype="dotdash", colour = "brown4") +
-  geom_vline(data = tMaxAGLines_077, aes(xintercept = tMaxAG), linetype="dotdash", colour = "brown1") +
-  geom_vline(data = tMaxAGLines_048, aes(xintercept = tMaxAG), linetype="dotdash", colour = "seagreen4") +
-  geom_vline(data = tMaxAGLines_127, aes(xintercept = tMaxAG), linetype="dotdash", colour = "palegreen3") +
   scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="", labels = lab1) +
   scale_y_continuous(breaks=seq(0, 1.2, by = 0.4)) +
   coord_cartesian(ylim = c(0, 1.7)) +
@@ -354,10 +307,6 @@ MCGrowthRateExp %>%
 MCGrowthRateExp %>%
   ggplot() +
   geom_point(aes(x = E_hoursExp, y = PURPARRatioExp, colour = as.factor(Strain)), alpha = 0.9, size = 3, show.legend = T) +
-  geom_vline(data = tMaxAGLines_056, aes(xintercept = tMaxAG), linetype="dotdash", colour = "brown4") +
-  geom_vline(data = tMaxAGLines_077, aes(xintercept = tMaxAG), linetype="dotdash", colour = "brown1") +
-  geom_vline(data = tMaxAGLines_048, aes(xintercept = tMaxAG), linetype="dotdash", colour = "seagreen4") +
-  geom_vline(data = tMaxAGLines_127, aes(xintercept = tMaxAG), linetype="dotdash", colour = "palegreen3") +
   scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="", labels = lab1) +
   scale_y_continuous(breaks=seq(0, 1.2, by = 0.4)) +
   coord_cartesian(ylim = c(0, 1.7)) +
