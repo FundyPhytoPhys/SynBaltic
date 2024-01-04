@@ -88,22 +88,35 @@ MultiCultiGrowth <- readRDS(MultiCultiGrowthFile)  %>%
 MultiCultiGrowth<-MultiCultiGrowth %>% 
   dplyr::select(c(Tube, ExpDate, MC, Run, SampleID, Strain, Par_ue, Photoperiod, WL, O2, LightShape, PARPhotonDose_day, OD720_Lmu_se, OD720_Lmu_corr, deltaOD_Lmu_se, deltaOD_Lmu_corr))
   
-MultiCultiGrowth<-MultiCultiGrowth %>% 
+
+MultiCultiGrowth900<-MultiCultiGrowth %>% 
+  filter(Par_ue == 900) %>% 
+  filter(Strain == "BA120R" | Strain == "BA132R" | Strain == "BA60G" | Strain == "BA124G") %>% 
+  mutate(Strain=case_when(Strain=="BA120R"~"PE-rich_120",
+         Strain=="BA132R"~"PE-rich_132",
+        Strain=="BA60G"~"PC-rich_060",
+         Strain=="BA124G"~"PC-rich_124"))
+
+MultiCultiGrowth600<-MultiCultiGrowth %>% 
+  filter(Run != 77) %>% 
+  filter(Par_ue == 600) %>% 
+  filter(Strain == "BA48R" | Strain == "BA127R" | Strain == "BA56G" | Strain == "BA77G") %>% 
   mutate(Strain=case_when(Strain=="BA127R"~"PE-rich_127",
          Strain=="BA48R"~"PE-rich_048",
         Strain=="BA56G"~"PC-rich_056",
          Strain=="BA77G"~"PC-rich_077"))
 
-MultiCultiGrowth1<-MultiCultiGrowth %>% 
-  filter(Run==77) %>% 
-  filter(Strain =="PC-rich_077")
-MultiCultiGrowth2<-MultiCultiGrowth %>% 
-  filter(Run==121) %>% 
-  filter(Strain !="PC-rich_077")
-MultiCultiGrowth3<-MultiCultiGrowth %>% 
-  filter(Run!=121 & Run!= 77) 
-MultiCultiGrowth<-rbind(MultiCultiGrowth1, MultiCultiGrowth2, MultiCultiGrowth3)
-  rm(MultiCultiGrowth1, MultiCultiGrowth2, MultiCultiGrowth3)
+MultiCultiGrowthColour<-MultiCultiGrowth %>% 
+  filter(Run == 34) %>% 
+  mutate(Strain=case_when(Strain=="BA60G"~"PC-rich_060"))
+
+MultiCultiGrowthTrans<-MultiCultiGrowth %>% 
+  filter(Run == 64 | Run == 67) %>% 
+  mutate(Strain=case_when(Strain=="BA127R"~"PE-rich_127",
+         Strain=="BA48R"~"PE-rich_048",
+        Strain=="BA56G"~"PC-rich_056",
+         Strain=="BA77G"~"PC-rich_077"))
+
 ```
 
 # Load processed Olis&Jaz RDS
@@ -139,17 +152,12 @@ MCGrowthRate <- OLISSpectra %>%
 # Create preliminary plot - 900
 
 ```{r preliminary plot, warning = FALSE}
-MultiCultiGrowth %>%
-  filter(Run == 65 | Run == 62 | Run == 60 | Run == 75) %>% 
-  filter(Par_ue == 900) %>% 
-  # filter(Strain == "PE-rich_120" | Strain == "PE-rich_132" | Strain == "PC-rich_060" | Strain == "PC-rich_124")  %>% 
-  filter(Strain == "BA120R" | Strain == "BA132R" | Strain == "BA60G" | Strain == "BA124G")  %>% 
-  
+MultiCultiGrowth900 %>%
   ggplot() +
-  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = T) +
+  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Photoperiod)), size = 3.5, alpha = 0.9, show.legend = T) +
   # geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5) +
-  scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
-  ggh4x::facet_nested(rows = vars(Strain), cols = vars(Photoperiod)) +
+  # scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
+  ggh4x::facet_nested(rows = vars(Strain)) +
   theme_bw()
 ```
 
@@ -162,17 +170,13 @@ ggsave(file = file.path(PlotsPath, paste("GrowthRate900_Plot",".png",sep = "")),
 # Create preliminary plot - 600
 
 ```{r preliminary plot, warning = FALSE}
-MultiCultiGrowth %>%
-  filter(Run == 50 | Run == 77 | Run == 121) %>% 
-  filter(Par_ue == 600) %>% 
-  # filter(Strain == "PE-rich_048" | Strain == "PE-rich_127" | Strain == "PC-rich_056" | Strain == "PC-rich_077") %>% 
-  filter(Strain == "BA48R" | Strain == "BA127R" | Strain == "BA56G" | Strain == "BA77G") %>% 
-  
+MultiCultiGrowth600 %>%
+  filter(Run!=77) %>% 
   ggplot() +
-  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = T) +
-  # geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5) +
-  scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
-  ggh4x::facet_nested(rows = vars(Strain), cols = vars(Photoperiod)) +
+  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Photoperiod)), size = 3.5, alpha = 0.9, show.legend = T) +
+  geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5, width = 0) +
+  # scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
+  ggh4x::facet_nested(rows = vars(Strain)) +
   theme_bw()
 ```
 # Save plot 
@@ -186,9 +190,7 @@ ggsave(file = file.path(PlotsPath, paste("GrowthRate600_Plot",".png",sep = "")),
 # Create preliminary plot - Trans
 
 ```{r preliminary plot, warning = FALSE}
-MultiCultiGrowth %>%
-  filter(Run == 64 | Run == 67) %>% 
-
+MultiCultiGrowthTrans %>%
   ggplot() +
   geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = T) +
   # geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5) +
@@ -207,13 +209,11 @@ ggsave(file = file.path(PlotsPath, paste("GrowthRateTrans_Plot",".png",sep = "")
 # Create preliminary plot - colour
 
 ```{r preliminary plot, warning = FALSE}
-MultiCultiGrowth %>%
-  filter(Run == 34) %>% 
-
+MultiCultiGrowthColour %>%
   ggplot() +
-  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = T) +
-  geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5) +
-  scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
+  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = F) +
+  geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5, width = 0) +
+  # scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
   ggh4x::facet_nested(rows = vars(Par_ue), cols = vars(WL)) +
   theme_bw()
 ```

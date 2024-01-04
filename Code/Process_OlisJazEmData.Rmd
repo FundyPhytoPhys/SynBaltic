@@ -414,11 +414,12 @@ ggsave(file = file.path(PlotsPath, paste("OlisSpectraColour_Plot",".png",sep = "
 ```{r Create plot, fig.height = 10, fig.width = 8}
 
 OLISSpectraPUR900 %>%
+  filter(E_days == 7) %>% 
   ggplot() +
   geom_area(aes(x = nm, y = EmNormJaz439, fill = "gray84"), alpha = 0.6, show.legend = F) +
   # geom_area(aes(x = nm, y = PURNormBA127R, fill = "brown4"), alpha = 0.5, show.legend = F) +
   # geom_area(aes(x = nm, y = PURNormBA77G, fill = "palegreen3"), alpha = 0.5, show.legend = F) +
-  geom_line(aes(x = nm, y = AbsNorm440, colour = as.factor(Strain), linetype = as.factor(Strain)), show.legend = F, size = 0.4) +
+  geom_line(aes(x = nm, y = AbsNorm440, colour = as.factor(E_days)), show.legend = T, size = 0.4) +
 
   stat_wl_strip(aes(x = nm), ymin = -Inf, ymax = -0.025, alpha = 0.5) +
   scale_fill_identity() +
@@ -462,7 +463,7 @@ OLISSpectraPUR600 %>%
   geom_area(aes(x = nm, y = EmNormJaz439, fill = "gray84"), alpha = 0.6, show.legend = F) +
   # geom_area(aes(x = nm, y = PURNormBA127R, fill = "brown4"), alpha = 0.5, show.legend = F) +
   # geom_area(aes(x = nm, y = PURNormBA77G, fill = "palegreen3"), alpha = 0.5, show.legend = F) +
-  geom_line(aes(x = nm, y = AbsNorm440, colour = as.factor(Strain), linetype = as.factor(Strain)), show.legend = F, size = 0.4) +
+  geom_line(aes(x = nm, y = AbsNorm440, colour = as.factor(Strain)), show.legend = F, size = 0.4) +
 
   stat_wl_strip(aes(x = nm), ymin = -Inf, ymax = -0.025, alpha = 0.5) +
   scale_fill_identity() +
@@ -505,7 +506,7 @@ OLISSpectraPURTrans %>%
   geom_area(aes(x = nm, y = EmNormJaz439, fill = "gray84"), alpha = 0.6, show.legend = F) +
   # geom_area(aes(x = nm, y = PURNormBA127R, fill = "brown4"), alpha = 0.5, show.legend = F) +
   # geom_area(aes(x = nm, y = PURNormBA77G, fill = "palegreen3"), alpha = 0.5, show.legend = F) +
-  geom_line(aes(x = nm, y = AbsNorm440, colour = as.factor(Strain), linetype = as.factor(Strain)), show.legend = F, size = 0.4) +
+  geom_line(aes(x = nm, y = AbsNorm440, colour = as.factor(Strain)), show.legend = F, size = 0.4) +
 
   stat_wl_strip(aes(x = nm), ymin = -Inf, ymax = -0.025, alpha = 0.5) +
   scale_fill_identity() +

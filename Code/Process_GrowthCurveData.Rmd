@@ -349,6 +349,7 @@ MultiCultiData600<-rbind(MultiCultiData50, MultiCultiData77, MultiCultiData121)
   rm(MultiCultiData50, MultiCultiData77, MultiCultiData121)
   
 MultiCultiData600<-MultiCultiData600 %>% 
+  filter(Run != 77) %>% 
   filter(Par_ue == 600) %>% 
   filter(Strain == "BA48R" | Strain == "BA127R" | Strain == "BA56G" | Strain == "BA77G") %>% 
   rename(E_days=Day) %>% 
@@ -421,8 +422,9 @@ MultiCultiDataTrans <- MultiCultiDataTrans %>%
 
 ```{r create GrowthCurve plot, warning = FALSE}
 MultiCultiData900 %>%
+  filter(Time_h <120) %>% 
   ggplot() +
-  #geom_area(aes(x = Time_h, y = meanActinic_par_h), size = 0.1, fill = "tan1", alpha = 0.6) +
+  geom_area(aes(x = Time_h, y = meanActinic_par_h), size = 0.1, fill = "tan1", alpha = 0.6) +
   geom_line(aes(x = Time_h, y = meanOD680_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
   geom_line(aes(x = Time_h, y = meanOD720_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
   geom_line(aes(x = Time_h, y = meanDeltaOD_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
@@ -443,6 +445,7 @@ MultiCultiData900 %>%
         legend.key.height= unit(0.005, 'cm'),
         legend.spacing.x = unit(0.01, 'cm'),
         legend.text = element_text(size=10))
+
 ```
 
 # Save plot 
@@ -454,16 +457,25 @@ ggsave(file = file.path(PlotsPath, paste("GrowthCurve900_SupPlot",".png",sep = "
 # Create GrowthCurve plot - 600
 
 ```{r create GrowthCurve plot, warning = FALSE}
+
+data_text16 <- data.frame(Photoperiod = c(16), Strain  = c("PC-rich_056", "PC-rich_077", "PE-rich_048", "PE-rich_127"), label = c('µ = 0.025', 'µ = 0.068', 'µ = 0.055', 'µ = 0.070'))
+
+data_text24 <- data.frame(Photoperiod = c(24), Strain  = c("PC-rich_056", "PC-rich_077", "PE-rich_048", "PE-rich_127"), label = c('µ = 0.048', 'µ = 0.091', 'µ = 0.062', 'µ = 0.064'))
+
 MultiCultiData600 %>%
-  filter(Run!=77) %>% 
   ggplot() +
   geom_area(aes(x = Time_h, y = meanActinic_par_h), size = 0.1, fill = "tan1", alpha = 0.6) +
   geom_line(aes(x = Time_h, y = meanOD680_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
   geom_line(aes(x = Time_h, y = meanOD720_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
   geom_line(aes(x = Time_h, y = meanDeltaOD_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  geom_text(data=data_text16, aes(x=150, y=1, label=label), size=3.7) +
+  geom_text(data=data_text24, aes(x=150, y=1, label=label), size=3.7) +
+  scale_y_continuous(breaks=seq(0, 1, by = 0.25)) +
+  coord_cartesian(ylim = c(0, 1.2)) +
+  
   scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="") +
-  labs(y = "Optical density ("~OD[680]~")", x = "Elapsed time (h)") +
-  ggh4x::facet_nested(cols = vars(facetsPhotoperiod, Photoperiod), rows = vars(Strain), labeller = label_parsed) +
+  labs(y = "Optical density", x = "Elapsed time (h)") +
+  ggh4x::facet_nested(cols = vars(Photoperiod), rows = vars(Strain), labeller = label_parsed) +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
@@ -495,7 +507,8 @@ MultiCultiDataColour %>%
   geom_line(aes(x = Time_h, y = meanOD720_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
   geom_line(aes(x = Time_h, y = meanDeltaOD_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
   scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="") +
-  labs(y = "Optical density ("~OD[680]~")", x = "Elapsed time (h)") +
+    labs(y = "Optical density", x = "Elapsed time (h)") +
+  # labs(y = "Optical density ("~OD[680]~")", x = "Elapsed time (h)") +
   ggh4x::facet_nested(cols = vars(WL), rows = vars(Par_ue), labeller = label_parsed) +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
@@ -521,14 +534,33 @@ ggsave(file = file.path(PlotsPath, paste("GrowthCurveColour_SupPlot",".png",sep 
 # Create GrowthCurve plot - Trans
 
 ```{r create GrowthCurve plot, warning = FALSE}
+
+data_text6430 <- data.frame(Run = c(64), Par_ue = c(30), Strain  = c("PC-rich_056", "PC-rich_077", "PE-rich_048", "PE-rich_127"), label = c('µ = 0.014', 'µ = 0.018', 'µ = 0.019', 'µ = 0.025'))
+
+data_text64900 <- data.frame(Run = c(64), Par_ue = c(900), Strain  = c("PC-rich_056", "PC-rich_077", "PE-rich_048", "PE-rich_127"), label = c('µ = 0.101', 'µ = 0.105', 'µ = 0.072', 'µ = 0.055'))
+
+
+
+data_text6730 <- data.frame(Run = c(67), Par_ue = c(30), Strain  = c("PC-rich_056", "PC-rich_077", "PE-rich_048", "PE-rich_127"), label = c('µ = 0.013', 'µ = 0.023', 'µ = 0.019', 'µ = 0'))
+
+data_text67900 <- data.frame(Run = c(67), Par_ue = c(900), Strain  = c("PC-rich_056", "PC-rich_077", "PE-rich_048", "PE-rich_127"), label = c('µ = 0.086', 'µ = 0.090', 'µ = 0.074', 'µ = 0'))
+
+
 MultiCultiDataTrans %>%
   ggplot() +
   geom_area(aes(x = Time_h, y = meanActinic_par_h), size = 0.1, fill = "tan1", alpha = 0.6) +
   geom_line(aes(x = Time_h, y = meanOD680_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
   geom_line(aes(x = Time_h, y = meanOD720_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
   geom_line(aes(x = Time_h, y = meanDeltaOD_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  geom_text(data=data_text6430, aes(x=150, y=1, label=label), size=3.7) +
+  geom_text(data=data_text6730, aes(x=150, y=1, label=label), size=3.7) +
+  
+  geom_text(data=data_text64900, aes(x=150, y=1, label=label), size=3.7) +
+  geom_text(data=data_text67900, aes(x=150, y=1, label=label), size=3.7) +
+  
   scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="") +
-  labs(y = "Optical density ("~OD[680]~")", x = "Elapsed time (h)") +
+    labs(y = "Optical density", x = "Elapsed time (h)") +
+  # labs(y = "Optical density ("~OD[680]~")", x = "Elapsed time (h)") +
   ggh4x::facet_nested(cols = vars(Run, Par_ue), rows = vars(Strain), labeller = label_parsed) +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
@@ -558,7 +590,7 @@ MultiCultiData600 %>%
   ggplot() +
   geom_line(aes(x = meanOD720_h, y = meanDeltaOD_h, colour = as.factor(Strain)), size = 0.7, show.legend = T) +
   scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="") +
-  ggh4x::facet_nested(cols = vars(facetsPhotoperiod, Photoperiod), rows = vars(facetsPar_ue, Par_ue), labeller = label_parsed) +
+  ggh4x::facet_nested(cols = vars(Photoperiod), rows = vars(Strain), labeller = label_parsed) +
   theme_bw() 
 ```
 
