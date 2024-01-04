@@ -417,16 +417,18 @@ MultiCultiDataTrans <- MultiCultiDataTrans %>%
 ```
 
 
-# Create GrowthCurve plot
+# Create GrowthCurve plot - 900
 
-```{r create GrowthCurve plot, fig.height = 8, fig.width = 8, warning = FALSE}
-MultiCultiDataAll %>%
+```{r create GrowthCurve plot, warning = FALSE}
+MultiCultiData900 %>%
   ggplot() +
-  geom_area(aes(x = Time_h, y = meanActinic_par_h), size = 0.1, fill = "tan1", alpha = 0.6) +
-  geom_line(aes(x = Time_h, y = meanOD680_h, colour = as.factor(Strain)), size = 0.5, show.legend = T) +
+  #geom_area(aes(x = Time_h, y = meanActinic_par_h), size = 0.1, fill = "tan1", alpha = 0.6) +
+  geom_line(aes(x = Time_h, y = meanOD680_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  geom_line(aes(x = Time_h, y = meanOD720_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  geom_line(aes(x = Time_h, y = meanDeltaOD_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
   scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="") +
-  labs(y = "Optical density ("~OD[680]~")", x = "Elapsed time (h)") +
-  ggh4x::facet_nested(cols = vars(facetsPhotoperiod, Photoperiod), rows = vars(facetsPar_ue, Par_ue), labeller = label_parsed) +
+  labs(y = "Optical density", x = "Elapsed time (h)") +
+  ggh4x::facet_nested(cols = vars(facetsPhotoperiod, Photoperiod), rows = vars(Strain), labeller = label_parsed) +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
@@ -446,13 +448,113 @@ MultiCultiDataAll %>%
 # Save plot 
 
 ```{r save plot}
-ggsave(file = file.path(PlotsPath, paste("GrowthCurve_SupPlot",".png",sep = "")), height=10, width= 8,  dpi = 300, limitsize = TRUE)
+ggsave(file = file.path(PlotsPath, paste("GrowthCurve900_SupPlot",".png",sep = "")), height=10, width= 8,  dpi = 300, limitsize = TRUE)
+```
+
+# Create GrowthCurve plot - 600
+
+```{r create GrowthCurve plot, warning = FALSE}
+MultiCultiData600 %>%
+  filter(Run!=77) %>% 
+  ggplot() +
+  geom_area(aes(x = Time_h, y = meanActinic_par_h), size = 0.1, fill = "tan1", alpha = 0.6) +
+  geom_line(aes(x = Time_h, y = meanOD680_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  geom_line(aes(x = Time_h, y = meanOD720_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  geom_line(aes(x = Time_h, y = meanDeltaOD_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="") +
+  labs(y = "Optical density ("~OD[680]~")", x = "Elapsed time (h)") +
+  ggh4x::facet_nested(cols = vars(facetsPhotoperiod, Photoperiod), rows = vars(Strain), labeller = label_parsed) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text = element_text(size=12),
+        axis.title = element_text(size=16),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=10)),
+        axis.title.x = element_text(margin=margin(t=10)),
+        legend.background = element_rect(fill="transparent"),
+        legend.position = c(0.1,0.95),
+        legend.key.height= unit(0.005, 'cm'),
+        legend.spacing.x = unit(0.01, 'cm'),
+        legend.text = element_text(size=10))
+```
+# Save plot 
+
+```{r save plot}
+ggsave(file = file.path(PlotsPath, paste("GrowthCurve600_SupPlot",".png",sep = "")), height=10, width= 8,  dpi = 300, limitsize = TRUE)
+```
+
+# Create GrowthCurve plot - Colour
+
+```{r create GrowthCurve plot, warning = FALSE}
+MultiCultiDataColour %>%
+  ggplot() +
+  geom_area(aes(x = Time_h, y = meanActinic_par_h), size = 0.1, fill = "tan1", alpha = 0.6) +
+  geom_line(aes(x = Time_h, y = meanOD680_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  geom_line(aes(x = Time_h, y = meanOD720_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  geom_line(aes(x = Time_h, y = meanDeltaOD_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="") +
+  labs(y = "Optical density ("~OD[680]~")", x = "Elapsed time (h)") +
+  ggh4x::facet_nested(cols = vars(WL), rows = vars(Par_ue), labeller = label_parsed) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text = element_text(size=12),
+        axis.title = element_text(size=16),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=10)),
+        axis.title.x = element_text(margin=margin(t=10)),
+        legend.background = element_rect(fill="transparent"),
+        legend.position = c(0.1,0.95),
+        legend.key.height= unit(0.005, 'cm'),
+        legend.spacing.x = unit(0.01, 'cm'),
+        legend.text = element_text(size=10))
+```
+# Save plot 
+
+```{r save plot}
+ggsave(file = file.path(PlotsPath, paste("GrowthCurveColour_SupPlot",".png",sep = "")), height=10, width= 8,  dpi = 300, limitsize = TRUE)
+```
+
+# Create GrowthCurve plot - Trans
+
+```{r create GrowthCurve plot, warning = FALSE}
+MultiCultiDataTrans %>%
+  ggplot() +
+  geom_area(aes(x = Time_h, y = meanActinic_par_h), size = 0.1, fill = "tan1", alpha = 0.6) +
+  geom_line(aes(x = Time_h, y = meanOD680_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  geom_line(aes(x = Time_h, y = meanOD720_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  geom_line(aes(x = Time_h, y = meanDeltaOD_h, colour = as.factor(Strain)), size = 0.5, show.legend = F) +
+  scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="") +
+  labs(y = "Optical density ("~OD[680]~")", x = "Elapsed time (h)") +
+  ggh4x::facet_nested(cols = vars(Run, Par_ue), rows = vars(Strain), labeller = label_parsed) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text = element_text(size=12),
+        axis.title = element_text(size=16),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=10)),
+        axis.title.x = element_text(margin=margin(t=10)),
+        legend.background = element_rect(fill="transparent"),
+        legend.position = c(0.1,0.95),
+        legend.key.height= unit(0.005, 'cm'),
+        legend.spacing.x = unit(0.01, 'cm'),
+        legend.text = element_text(size=10))
+```
+# Save plot 
+
+```{r save plot}
+ggsave(file = file.path(PlotsPath, paste("GrowthCurveTrans_SupPlot",".png",sep = "")), height=10, width= 8,  dpi = 300, limitsize = TRUE)
 ```
 
 # Create preliminary plot - loop
 
 ```{r create preliminary plot, warning = FALSE}
-MultiCultiDataAll %>%
+MultiCultiData600 %>%
   ggplot() +
   geom_line(aes(x = meanOD720_h, y = meanDeltaOD_h, colour = as.factor(Strain)), size = 0.7, show.legend = T) +
   scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4"), name="") +
@@ -463,21 +565,25 @@ MultiCultiDataAll %>%
 # Cleaning df before saving as rds and removed unnecessary files from the environment
 
 ```{r cleanifng d}
-rm(tMaxAGLines_056, tMaxAGLines_077, tMaxAGLines_048, tMaxAGLines_127, tmaxAG)
+rm(MultiCultiData)
 ```
 
-# Save rds for further analysis
+# Save Rds for further analysis
 
 ```{r save rds}
-saveRDS(MultiCultiDataAll, file.path(DataOut, paste(Project, "Processed_GrowthCurve.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
+saveRDS(MultiCultiData900, file.path(DataOut, paste(Project, "Processed_GrowthCurve_900.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
 
-saveRDS(MultiCultiDataAll, file.path(RDSPlotPath, paste(Project, "Plot_GrowthCurve.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
+saveRDS(MultiCultiData600, file.path(DataOut, paste(Project, "Processed_GrowthCurve_600.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
+
+saveRDS(MultiCultiDataColour, file.path(DataOut, paste(Project, "Processed_GrowthCurve_Colour.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
+
+saveRDS(MultiCultiDataTrans, file.path(DataOut, paste(Project, "Processed_GrowthCurve_Trans.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
 ```
 
 # Variable names used in Data Dictionary
 
 ```{r}
-colnames(MultiCultiDataAll)
+colnames(MultiCultiData900)
 ```
 
 
