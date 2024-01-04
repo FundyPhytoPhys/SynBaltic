@@ -135,17 +135,100 @@ MCGrowthRate <- OLISSpectra %>%
   rm(MultiCultiGrowth, OLISSpectra)
 ```
 
-# Create preliminary plot
+
+# Create preliminary plot - 900
 
 ```{r preliminary plot, warning = FALSE}
-MCGrowthRate %>%
+MultiCultiGrowth %>%
+  filter(Run == 65 | Run == 62 | Run == 60 | Run == 75) %>% 
+  filter(Par_ue == 900) %>% 
+  # filter(Strain == "PE-rich_120" | Strain == "PE-rich_132" | Strain == "PC-rich_060" | Strain == "PC-rich_124")  %>% 
+  filter(Strain == "BA120R" | Strain == "BA132R" | Strain == "BA60G" | Strain == "BA124G")  %>% 
+  
   ggplot() +
-  geom_point(aes(x = Par_ue, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = T) +
-  geom_errorbar(aes(x = Par_ue, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5) +
+  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = T) +
+  # geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5) +
   scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
   ggh4x::facet_nested(rows = vars(Strain), cols = vars(Photoperiod)) +
   theme_bw()
 ```
+
+# Save plot 
+
+```{r save plot}
+ggsave(file = file.path(PlotsPath, paste("GrowthRate900_Plot",".png",sep = "")), height=10, width= 8,  dpi = 300, limitsize = TRUE)
+```
+
+# Create preliminary plot - 600
+
+```{r preliminary plot, warning = FALSE}
+MultiCultiGrowth %>%
+  filter(Run == 50 | Run == 77 | Run == 121) %>% 
+  filter(Par_ue == 600) %>% 
+  # filter(Strain == "PE-rich_048" | Strain == "PE-rich_127" | Strain == "PC-rich_056" | Strain == "PC-rich_077") %>% 
+  filter(Strain == "BA48R" | Strain == "BA127R" | Strain == "BA56G" | Strain == "BA77G") %>% 
+  
+  ggplot() +
+  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = T) +
+  # geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5) +
+  scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
+  ggh4x::facet_nested(rows = vars(Strain), cols = vars(Photoperiod)) +
+  theme_bw()
+```
+# Save plot 
+
+```{r save plot}
+ggsave(file = file.path(PlotsPath, paste("GrowthRate600_Plot",".png",sep = "")), height=10, width= 8,  dpi = 300, limitsize = TRUE)
+```
+
+
+
+# Create preliminary plot - Trans
+
+```{r preliminary plot, warning = FALSE}
+MultiCultiGrowth %>%
+  filter(Run == 64 | Run == 67) %>% 
+
+  ggplot() +
+  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = T) +
+  # geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5) +
+  scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
+  ggh4x::facet_nested(rows = vars(Strain), cols = vars(Run, Par_ue)) +
+  theme_bw()
+```
+# Save plot 
+
+```{r save plot}
+ggsave(file = file.path(PlotsPath, paste("GrowthRateTrans_Plot",".png",sep = "")), height=10, width= 8,  dpi = 300, limitsize = TRUE)
+```
+
+
+
+# Create preliminary plot - colour
+
+```{r preliminary plot, warning = FALSE}
+MultiCultiGrowth %>%
+  filter(Run == 34) %>% 
+
+  ggplot() +
+  geom_point(aes(x = PARPhotonDose_day, y = deltaOD_Lmu_corr,colour=as.factor(Strain)), size = 3.5, alpha = 0.9, show.legend = T) +
+  geom_errorbar(aes(x = PARPhotonDose_day, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se), alpha = 0.5) +
+  scale_colour_discrete(type=c("seagreen4", "palegreen3", "brown1", "brown4")) +
+  ggh4x::facet_nested(rows = vars(Par_ue), cols = vars(WL)) +
+  theme_bw()
+```
+# Save plot 
+
+```{r save plot}
+ggsave(file = file.path(PlotsPath, paste("GrowthRateColour_Plot",".png",sep = "")), height=10, width= 8,  dpi = 300, limitsize = TRUE)
+```
+
+
+
+
+
+
+
 # Calculated Anova and Tukey test
 
 ```{r calculated statistics}
