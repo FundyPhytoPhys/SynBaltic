@@ -127,6 +127,22 @@ JazDataRoundMetaWW <- JazDataRound %>%
   filter(WL=="WW")
 ```
 
+# Normalize Jaz emission to 393 nm (405)
+
+```{r Normalization Jaz emission at 393}
+EmissionJaz405 <- JazDataRound %>%
+  filter(WL==405) %>% 
+  group_by(WL, Strain, Par_ue) %>%
+  filter(WavelengthRound == 393) %>%
+  mutate(EmJaz393 = CountsMean) %>%
+  select(Strain, EmJaz393, Par_ue) %>%
+  ungroup()
+
+JazDataRoundMeta405 <- JazDataRound %>%
+  left_join(., EmissionJaz405) %>%
+  mutate(EmNormJaz393 = CountsMean / EmJaz393) %>% 
+  filter(WL==405)
+```
 
 # Normalize Jaz emission to 441 nm (450)
 
@@ -187,10 +203,13 @@ JazDataRoundMetaColour1 <- JazDataRoundMeta660 %>%
 JazDataRoundMetaColour2 <- JazDataRoundMetaColour1 %>%
   full_join(., JazDataRoundMeta450, by = c("Par_ue" = "Par_ue", "Strain" = "Strain", "WL" = "WL", "FilenameJaz"="FilenameJaz", "WavelengthRound"="WavelengthRound", "CountsMean"="CountsMean"))
 
-JazDataRoundMetaColour <- JazDataRoundMetaColour2 %>%
+JazDataRoundMetaColour3 <- JazDataRoundMetaColour2 %>%
   full_join(., JazDataRoundMetaWW, by = c("Par_ue" = "Par_ue", "Strain" = "Strain", "WL" = "WL", "FilenameJaz"="FilenameJaz", "WavelengthRound"="WavelengthRound", "CountsMean"="CountsMean"))
 
-rm(JazDataRoundMetaColour1, JazDataRoundMetaColour2, JazDataRoundMeta660, JazDataRoundMeta450, JazDataRoundMeta530)
+JazDataRoundMetaColour <- JazDataRoundMetaColour3 %>%
+  full_join(., JazDataRoundMeta405, by = c("Par_ue" = "Par_ue", "Strain" = "Strain", "WL" = "WL", "FilenameJaz"="FilenameJaz", "WavelengthRound"="WavelengthRound", "CountsMean"="CountsMean"))
+
+rm(JazDataRoundMetaColour1, JazDataRoundMetaColour2, JazDataRoundMetaColour3, JazDataRoundMeta660, JazDataRoundMeta450, JazDataRoundMeta530)
 ```
 
 
@@ -228,6 +247,16 @@ OLISSpectraMetaPURColourWW <- OLISSpectraMetaColour %>%
   mutate(PURWW = Par_ue*(PURNormSum/SumEmNormJaz439)) %>% 
   ungroup() %>% 
   filter(Run ==34) 
+
+OLISSpectraMetaPURColour405 <- OLISSpectraMetaColour %>%
+  mutate(PURNorm405 = (AbsNorm440*EmNormJaz393)) %>%
+  group_by(WL, Strain, Par_ue, Photoperiod, E_days) %>%
+  mutate(PURNormSum = sum(PURNorm405)) %>%
+  mutate(SumEmNormJaz393 = sum(EmNormJaz393)) %>%
+  mutate(PUR405 = Par_ue*(PURNormSum/SumEmNormJaz393)) %>%
+  ungroup() %>% 
+  filter(Strain!= "SS120") %>% 
+  filter(WL==405)
 
 OLISSpectraMetaPURColour450 <- OLISSpectraMetaColour %>%
   mutate(PURNorm450 = (AbsNorm440*EmNormJaz441)) %>%
@@ -300,6 +329,11 @@ OLISSpectraPUR600 <- OLISSpectraMetaPURWW %>%
 
 OLISSpectraPURTrans <- OLISSpectraMetaPURWW %>%
   filter(Run == 64 | Run == 67) 
+
+# OLISSpectraPURPro <- OLISSpectraMetaPURWW %>%
+#   filter(Run == 66 | Run == 69 | Run == 72) %>% 
+#   filter(WL==405) %>% 
+#   filter(Strain!="SS120")
 ```
 
 # Preparing df for creating representative plot
@@ -357,6 +391,7 @@ OLISSpectraPURTrans <- OLISSpectraPURTrans %>%
 ```{r}
 rm(EmissionJaz450, EmissionJaz530, EmissionJaz660, EmissionJazWW, JazData, JazDataRound, JazDataRoundMeta450, JazDataRoundMeta530, JazDataRoundMeta660, JazDataRoundMetaWW, OLISSpectra, OLISSpectraMetaPURWW, OLISSpectraMetaWW)
 ```
+
 
 
 # Create plot

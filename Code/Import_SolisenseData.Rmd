@@ -86,7 +86,7 @@ CultureCatalog<-CultureCatalog %>%
 # Set Project Variables from old software (OS)
 
 ```{r set project variables, read zipped files, list available files, warning = FALSE, echo=FALSE}
-Project <- "Baltic_Photoperiod"
+Project <- "SynBaltic"
 DataOut <- file.path("..", "Data", "ImportedData", "ImportedSolisenseData")
 
 zip_file <- file.path("..", "Data", "RawData", "SolisenseOSData.zip")
@@ -362,7 +362,7 @@ SolFitsTrimMetaDarkafterLightOS<- SolFitsTrimMetaDarkafterLightOS %>%
 # Set Project Variables from new software (NS)
 
 ```{r set project variables, read zipped files, list available files, warning = FALSE, echo=FALSE}
-Project <- "Baltic_Photoperiod"
+Project <- "SynBaltic"
 DataOut <- file.path("..", "Data", "ImportedData", "ImportedSolisenseData")
 
 zip_file <- file.path("..", "Data", "RawData", "SolisenseNSData.zip")
