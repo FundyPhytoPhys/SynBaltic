@@ -43,8 +43,8 @@ library(googlesheets4)
 
 ```{r set project variables, warning = FALSE, echo=FALSE}
 #"..", takes up a level in the directory path
-Project <- "BalticPhotoperiod"
-DataOut <- file.path("..","Data", "ImportedData", "ImportedMetaData")
+Project <- "SynBaltic"
+DataOut <- file.path("..", "Allelopathy", "Data", "ImportedData", "ImportedMetaData")
 ProjectRows <- c("SySl")
 
 ProjectCols <- c("PrimaryOperator", "SampleID", "Run", "Strain", "ExpCul", "ExpDate", "ExpStartTime", "Par_ue", "Photoperiod", "Temp_c", "MC", "Tube","O2", "O2_Category", "WL","LightShape", "Optode", "OptodeCh", "OptodeMeasure", "ExpEndDate")
@@ -74,26 +74,19 @@ CultureCatalog$ExpStartTime<-gsub("1899-12-30 ","",as.character(CultureCatalog$E
 
 ```{r filter MetaData}
 CultureCatalog<-CultureCatalog %>% 
-  filter(Run == 39 | Run== 40 | Run == 43 | Run == 44| Run == 45| Run == 46| Run == 55 | Run == 58 | Run == 60 | Run == 62 | Run == 65 | Run == 71 | Run == 74 | Run == 77 | Run == 117 | Run == 121 | Run == 50) %>% 
-  filter(Strain == "BA48R" | Strain == "BA127R" | Strain == "BA77G" | Strain == "BA56G") %>% 
+  filter(Run == 134)  
+  #filter(Strain == "BA48R" | Strain == "BA127R" | Strain == "BA77G" | Strain == "BA56G") %>% 
   #filter(Par_ue != 600) %>% 
-  filter(WL == "WW")
+  #filter(WL == "WW")
 ```
 
 # Calculate daily PAR photon dose
 
 ```{r calculate PAR photon dose}
-CultureCatalog1 <- CultureCatalog %>%
+CultureCatalog <- CultureCatalog %>%
   filter(Photoperiod != "24") %>% 
   mutate(PARPhotonDose_day =(Par_ue/2)*Photoperiod*3600)
   
-CultureCatalog2 <- CultureCatalog %>%
-  filter(Photoperiod == "24") %>% 
-  mutate(PARPhotonDose_day = Par_ue*Photoperiod*3600) 
-  
-CultureCatalog <-rbind(CultureCatalog1, CultureCatalog2)
-
-rm(CultureCatalog1, CultureCatalog2)
 ```
 
 # Save rds for further analysis

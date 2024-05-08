@@ -1,0 +1,234 @@
+---
+title: "Process_GrowthRateData"
+author:
+- Sylwia Sliwinska-Wilczewska
+- Douglas A. Campbell
+date: "`r format(Sys.Date())`"
+output:
+bookdown::html_document2:
+    code_folding: show
+    keep_md: yes
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 6
+    fig_caption: yes
+bibliography: BalticPhotoperiod.bib
+csl: plos-one.csl
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Set Chunk Options
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+knitr::opts_chunk$set(fig.path='Figs/')
+```
+
+# Introduction
+
+Process_GrowthRateData.Rmd processes and combines PICO_Cleaned_MCData.Rds from Data/CleanedData/CleanedMCData folder and both BalticPhotoperiod_Processed_PigmentsAll.Rds and BalticPhotoperiod_Processed_PigmentsExp.Rds from Data/ProcessedData/ProcessedPigmentsData. This .Rmd generates BalticPhotoperiod_Processed_GrowthRateAll.Rds (stored in Data/ProcessedData/ProcessesGrowthRateData folder) and 2 plots (stored in Output/Figures folder).
+
+# Load Libraries and set Project Variables
+
+```{r load libraries} 
+library(lubridate)
+library(stringr)
+library(broom)
+library(knitr)
+library(OneR)
+library(zoo)
+library(strucchange)
+library(ggpubr)
+library(caret)
+library(reshape2)
+library(gcookbook)
+library(ggspectra)
+library(photobiologyWavebands)
+library(photobiology)
+library(scales)
+library(minpack.lm) #Standard 'nls' framework that uses 'nls.lm' for fitting
+library(data.table)
+library(googledrive)
+library(googlesheets4)
+library(tidyverse)
+library("patchwork") # merging plots
+
+```
+
+```{r set project variables}
+Project <- "SynBaltic"
+DataOut <- file.path("..", "Data", "ProcessedData", "ProcessedGrowthRateData")
+DataIn <- file.path("..", "Data", "CleanedData", "CleanedMCData", fsep = .Platform$file.sep)
+
+FigPath <- file.path("..", "Output", "Figures")
+FigRdsPath <- file.path("..", "Output", "FiguresRds")
+TableRdsPath <- file.path("..", "Output", "TablesRDS")
+
+FileEncode <- "UTF-8" 
+Delimiter <- ""
+HeaderRows <- 0
+```
+
+# List and read files
+
+```{r Exported Rmd only first time in session}
+list.files(path = DataIn, full.names = TRUE)
+```
+
+```{r read file}
+MultiCultiGrowthFile <- "../Data/CleanedData/CleanedMCData/PICO_Cleaned_MCData.Rds"
+
+MultiCultiGrowthFileName <- str_split(string = MultiCultiGrowthFile, "/")[[1]][3] %>%
+  str_remove(pattern = ".Rds") 
+
+MultiCultiGrowth <- readRDS(MultiCultiGrowthFile)  %>%
+  ungroup()
+```
+
+# Select revelant variables and preparing for further analysis
+
+```{r}
+MultiCultiGrowth<-MultiCultiGrowth %>% 
+  dplyr::select(c(Tube, ExpDate, MC, Run, SampleID, Strain, Par_ue, Photoperiod, WL, O2, LightShape, PARPhotonDose_day, OD720_Lmu_se, OD720_Lmu_corr, deltaOD_Lmu_se, deltaOD_Lmu_corr))
+  
+# MultiCultiGrowth<-MultiCultiGrowth %>% 
+#   mutate(Strain=case_when(Strain=="BA127R"~"PE-rich_127",
+#          Strain=="BA77G"~"PC-rich_077"))
+
+```
+
+
+# Growth rate per day
+
+```{r}
+MultiCultiGrowth<-MultiCultiGrowth %>% 
+  mutate(deltaOD_Lmu_corr=deltaOD_Lmu_corr*24)
+```
+
+# Adding facets labels
+
+```{r}
+# MultiCultiGrowth<-MultiCultiGrowth %>% 
+#   mutate(Oxygen=case_when(O2==21~"250~µM",
+#          O2==0~"2.5~µM"))
+```
+
+
+```{r}
+MultiCultiGrowth %>%
+  #filter(WL != "WW") %>% 
+  ggplot() +
+  geom_point(aes(x = Strain, y = deltaOD_Lmu_corr), size = 3.5, alpha = 0.9, show.legend = F) +
+  ggh4x::facet_nested(cols = vars(Tube)) +
+  theme_bw()
+
+MultiCultiGrowth %>%
+  #filter(WL != "WW") %>% 
+  ggplot() +
+  geom_point(aes(x = Strain, y = OD720_Lmu_corr), size = 3.5, alpha = 0.9, show.legend = F) +
+  ggh4x::facet_nested(cols = vars(Tube)) +
+  theme_bw()
+```
+
+```{r}
+# lab1=c(expression("PC-rich_077"), expression("PE-rich_127"))
+# 
+# MultiCultiGrowth %>%
+#   mutate(WLNum = if_else(WL == "WW", 750, as.numeric(WL))) %>%
+#   filter(WL != "WW") %>%
+#   ggplot() +
+#   geom_point(aes(x = WLNum, y = deltaOD_Lmu_corr, colour = as.factor(Strain), shape = as.factor(Strain)), size = 4, show.legend = T) +
+#   geom_line(aes(x = WLNum, y = deltaOD_Lmu_corr, colour = as.factor(Strain), linetype = as.factor(Strain)), show.legend = F) +
+#   # geom_errorbar(aes(x = WLNum, ymin = deltaOD_Lmu_corr - deltaOD_Lmu_se, ymax = deltaOD_Lmu_corr + deltaOD_Lmu_se, colour = as.factor(Strain)), width=20, size=0.3, show.legend = F) +
+#   
+#   stat_wl_strip(aes(x = WLNum), ymin = -Inf, ymax = -0.025, alpha = 0.5) +
+#   scale_fill_identity() +
+#   scale_colour_manual(values = c("palegreen3", "brown4"), name="", labels = lab1) +
+#   scale_shape_manual(values = c(16, 18), name="", labels = lab1) +
+#   scale_linetype_manual(values = c("solid", "dashed"), name="", labels = lab1) +
+#   labs(y = "Chlorophyll-specific exponential growth rate " ~ "("~d^-1~")", x = "Growth wavelength (nm)") +
+#   #scale_x_continuous(breaks=seq(0, 200, by = 50)) +
+#   #coord_cartesian(xlim = c (0, 200)) +
+#   #coord_cartesian(xlim = c (400, 800)) +
+#   # guides(colour = FALSE) +
+#   #ggh4x::facet_nested(rows = vars(O2), cols = vars(Strain), labeller = label_parsed) +
+#   labs(y = "µ " ~ "("~d^-1~")", x = "Wavelength (nm)") +
+#   ggh4x::facet_nested(rows = vars(factor(Oxygen, levels=c("250~µM","2.5~µM"))), labeller = label_parsed) +
+#  #ggh4x::facet_nested(cols = vars(Strain), rows = vars(factor(O2, levels=c("21","0"))), labeller = label_parsed) +
+#   theme_bw() +
+#   theme(panel.grid.minor = element_blank(),
+#         panel.grid.major = element_blank(),
+#         panel.spacing.x = unit(0.4, 'cm'),
+#         axis.text = element_text(size=12),
+#         axis.text.x = element_text(size=12),
+#         axis.title = element_text(size=16),
+#         strip.background = element_rect(fill="white"),
+#         strip.text = element_text(size=12),
+#         axis.title.y = element_text(margin=margin(r=10)),
+#         axis.title.x = element_text(margin=margin(t=10)),
+#         legend.background = element_rect(fill="transparent"),
+#         legend.key = element_blank(),
+#         legend.title = element_blank(),
+#         legend.position = c(0.10,0.90),
+#         legend.text = element_text(size=10))
+
+```
+
+# Save plot 
+
+```{r save plot}
+ggsave(file = file.path(FigPath, paste("Fig_GrowthRate",".png",sep = "")), height=5.5, width= 6,  dpi = 300, limitsize = TRUE)
+```
+
+
+
+-----------------------------------------------------------------------------------------------------------
+
+
+# Calculated Anova and Tukey test
+
+```{r calculated statistics}
+MultiCultiGrowth2<-MultiCultiGrowth %>% 
+  filter(WL != "WW")
+
+MCGrowthRateStats<-rbind(MultiCultiGrowth2, MultiCultiGrowth2) #I created double data here
+
+MCGrowthRateStats$O2 <- factor(MCGrowthRateStats$O2)
+MCGrowthRateStats$WL <- factor(MCGrowthRateStats$WL)
+MCGrowthRateStats$Strain <- factor(MCGrowthRateStats$Strain)
+
+# Two way Anova with interactions
+model<-aov(deltaOD_Lmu_corr~O2*WL*Strain, data=MCGrowthRateStats)
+AnovaTest_GrowthRate<-data.frame(unclass(summary(model)), check.names = FALSE, stringsAsFactors = FALSE)
+TukeyHSDTest_GrowthRate<-TukeyHSD(model, which = c("O2", "WL", "Strain"))
+```
+
+
+
+# Save RDS that create stats and tables
+
+```{r}
+saveRDS(AnovaTest_GrowthRate, file.path(TableRdsPath, paste(Project, "Anova_GrowthRate.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
+
+saveRDS(TukeyHSDTest_GrowthRate, file.path(TableRdsPath, paste(Project, "HSD_GrowthRate.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
+```
+
+# Cleaning the environment
+
+```{r}
+rm(MCGrowthRateStats, model, MultiCultiGrowth2)
+```
+
+# Save Rds for further analysis
+
+```{r save rds}
+saveRDS(MultiCultiGrowth, file.path(DataOut, paste(Project, "Processed_GrowthRate.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
+
+```
+
+
+------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
+
