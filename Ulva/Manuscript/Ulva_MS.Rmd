@@ -1,0 +1,160 @@
+---
+title: "The current state of knowledge on harmful blooms, interactions, and allelopathy phenomenon of Ulva sp. in aquatic ecosystems"
+
+author:
+- Gracjana Budzałek:
+    institute:
+    - UG
+    email: gbudzalek@gmail.com
+- Sylwia Śliwińska-Wilczewska:
+    institute:
+    - MTA
+    - UG
+    email: ssliwinskawilczews@mta.ca
+    ORCID: ORCID 0000-0002-3147-6605
+    correspondence: true
+- Cairo LeBlanc:
+    institute:
+    - MTA
+    email: ealeblanc2@mta.ca
+- Sarah Postuma:
+    institute: MTA
+    email: spostuma@mta.ca
+institute:
+- UG: Institute of Oceanography, University of Gdansk, 46 Pilsudskiego St, P81-378, Gdynia, Poland
+- MTA: Department of Biology, Mount Allison University, 53 York St., Sackville, NB, E4L 1C9, Canada
+output:
+  bookdown::word_document2:
+    reference_docx: Template.docx
+    code-folding: show
+    keep_md: yes
+    fig.caption: yes
+    toc: FALSE
+    pandoc_args:
+    - "--lua-filter=scholarly-metadata.lua"
+    - "--lua-filter=author-info-blocks.lua"
+  html_document:
+    df_print: paged
+  word_document:
+    reference_docx: Template.docx
+    code-folding: show
+    keep_md: yes
+    fig.caption: yes
+    toc: FALSE
+    pandoc_args:
+    - "--lua-filter=scholarly-metadata.lua"
+    - "--lua-filter=author-info-blocks.lua"
+    - "--lua-filter=custom_filter.lua"
+bibliography:
+- BalticPhotoperiod.bib
+- packages.bib
+- faultycitations.bib
+csl: "science-of-the-total-environment.csl"
+---
+
+```{r, import libraries, include = FALSE}
+library(tidyverse)
+library(glue)
+library(googlesheets4)
+googlesheets4:: gs4_deauth()
+# library(kableExtra)
+# library(flextable)
+library(knitr)
+library(readxl)
+library(stringr)
+library(rmarkdown)
+library(Cairo) #for greek symbols
+#library(trackdown)
+#options(knitr.table.format = "word_document2", knitr.kable.NA = '') 
+```
+
+```{r, save package citations, include = FALSE}
+knitr:: write_bib(c("tidyverse", "glue", "googlesheets4", "kableExtra"), "packages.bib")
+```
+
+```{r defining filepaths, include = FALSE}
+FiguresFP <- file.path("..", "Output", "Figures")
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br>
+
+# Abstract {.unnumbered}
+
+<br>
+
+# Introduction {.unnumbered}
+
+<br>
+
+# General characteristics of *Ulva* sp. {.unnumbered}
+
+Fig. \@ref(fig:Ulva) 
+
+```{r Ulva, fig.cap = Ulva_cap, fig.height = 8, fig.width = 6, echo = FALSE}
+Ulva_cap<- glue("Examples of *Ulva* sp.: *U. compressa* (A), xxxxxx", .sep = " ")
+knitr::include_graphics(file.path(FiguresFP,"Ulvaex.png"))
+```
+
+<br>
+
+# Occurrence and blooms of *Ulva* sp. {.unnumbered}
+
+```{r Map, fig.cap = Map_cap, fig.height = 8, fig.width = 6, echo = FALSE}
+Map_cap<- glue("Places in which mass occurrence of *Ulva* sp. was recorded: xxx (A)", .sep = " ")
+knitr::include_graphics(file.path(FiguresFP,"Fig_Map.png"))
+```
+
+<br>
+
+# Methods of testing *Ulva* sp. allelopathy on the surrounding ecosystem {.unnumbered}
+
+<br>
+
+#  Allelopathy and *Ulva* sp. interactions with other organisms {.unnumbered}
+## *Ulva* sp. as a natural active material for biomedical applications {.unnumbered}
+## *Ulva* sp. as a natural active material affecting the aquatic environment {.unnumbered}
+## *Ulva* sp. as a natural active material applicable in agriculture {.unnumbered}
+
+<br>
+
+# Allelopathic compounds and secondary metabolites of *Ulva* sp. {.unnumbered}
+
+<br>
+
+# Conclusions {.unnumbered}
+
+<br>
+
+**Additional Supporting Information may be found in the online version of this article.**
+
+<br>
+
+**Authors Contribution Statement:** All authors contributed to the discussion of the results, supported manuscript preparation, and approved the final submitted manuscript.
+
+<br>
+
+# Data availability statement {.unnumbered}
+
+Data supporting this study is available on:
+https://github.com/FundyPhytoPhys/SynBaltic (public GitHub Repository) and
+XXX (URL for MetaDataCatalog).
+
+Code to perform data processing and analyses is available at https://github.com/FundyPhytoPhys/SynBaltic.
+
+<br>
+
+## Acknowledgements {.unnumbered}
+
+<br>
+
+## Conflict of Interest {.unnumbered}
+
+None declared.
+
+<br>
+
+# References {.unnumbered}
