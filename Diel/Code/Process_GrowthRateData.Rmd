@@ -120,16 +120,11 @@ MultiCultiGrowth<-MultiCultiGrowth %>%
 MultiCultiGrowth %>%
   #filter(WL != "WW") %>% 
   ggplot() +
-  geom_point(aes(x = Strain, y = deltaOD_Lmu_corr), size = 3.5, alpha = 0.9, show.legend = F) +
-  ggh4x::facet_nested(cols = vars(Tube)) +
+  geom_point(aes(x = Par_ue, y = deltaOD_Lmu_corr), size = 3.5, alpha = 0.9, show.legend = F) +
+  ggh4x::facet_nested(cols = vars(WL, Photoperiod), rows = vars(Strain)) +
   theme_bw()
 
-MultiCultiGrowth %>%
-  #filter(WL != "WW") %>% 
-  ggplot() +
-  geom_point(aes(x = Strain, y = OD720_Lmu_corr), size = 3.5, alpha = 0.9, show.legend = F) +
-  ggh4x::facet_nested(cols = vars(Tube)) +
-  theme_bw()
+
 ```
 
 ```{r}

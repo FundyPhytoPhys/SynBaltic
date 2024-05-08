@@ -44,7 +44,7 @@ library(googlesheets4)
 ```{r set project variables, warning = FALSE, echo=FALSE}
 #"..", takes up a level in the directory path
 Project <- "SynBaltic"
-DataOut <- file.path("..", "Allelopathy", "Data", "ImportedData", "ImportedMetaData")
+DataOut <- file.path("..", "HighLight", "Data", "ImportedData", "ImportedMetaData")
 ProjectRows <- c("SySl")
 
 ProjectCols <- c("PrimaryOperator", "SampleID", "Run", "Strain", "ExpCul", "ExpDate", "ExpStartTime", "Par_ue", "Photoperiod", "Temp_c", "MC", "Tube","O2", "O2_Category", "WL","LightShape", "Optode", "OptodeCh", "OptodeMeasure", "ExpEndDate")
@@ -74,7 +74,7 @@ CultureCatalog$ExpStartTime<-gsub("1899-12-30 ","",as.character(CultureCatalog$E
 
 ```{r filter MetaData}
 CultureCatalog<-CultureCatalog %>% 
-  filter(Run == 134)  
+  filter(Run == 50 | Run == 60 | Run == 62 | Run == 65)  
   #filter(Strain == "BA48R" | Strain == "BA127R" | Strain == "BA77G" | Strain == "BA56G") %>% 
   #filter(Par_ue != 600) %>% 
   #filter(WL == "WW")
