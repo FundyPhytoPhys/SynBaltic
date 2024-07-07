@@ -52,7 +52,7 @@ MCMIXColours
 # Set Project Variables
 
 ```{r set project variables, read zipped files, list available files, warning = FALSE, echo=FALSE}
-Project <- "BalticO2"
+Project <- "Ulva"
 DataOut <- file.path("..", "Data", "ImportedData", "ImportedJazEmData", fsep = .Platform$file.sep)
 
 # Set the path to the zip folder

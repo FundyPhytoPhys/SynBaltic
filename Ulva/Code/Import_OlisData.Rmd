@@ -45,7 +45,7 @@ library(readxl)
 ```
 
 ```{r set project variables, read zipped files, list available files, warning = FALSE, echo=FALSE}
-Project <- "BalticO2"
+Project <- "Ulva"
 DataOut <- file.path("..", "Data", "ImportedData", "ImportedOlisData")
 
 # Set the path to the zip folder and the destination folder
@@ -130,28 +130,43 @@ TargetSpectraLong <- TargetSpectraLong %>%
 # Read MetaData
 
 ```{r read locally stored metadata from rds}
-CultureCatalog <- readRDS(file = file.path("..", "Data", "ImportedData", "ImportedMetaData", "CultureCatalog.Rds"))
-
-CultureCatalog<-CultureCatalog %>% 
-  select(-c(PrimaryOperator, Temp_c, ExpCul, ExpStartTime, O2_Category, Optode, OptodeCh, OptodeMeasure))
+# CultureCatalog <- readRDS(file = file.path("..", "Data", "ImportedData", "ImportedMetaData", "CultureCatalog.Rds"))
+# 
+# CultureCatalog<-CultureCatalog %>% 
+#   select(-c(PrimaryOperator, Temp_c, ExpCul, ExpStartTime, O2_Category, Optode, OptodeCh, OptodeMeasure))
 ```
 
 # Merge OlisSpectra with MetaData
 
 ```{r merge OlisSpectra with MetaData, warning = FALSE, echo=FALSE}
-OLISSpectraMeta <- CultureCatalog %>%
-  left_join(., TargetSpectraLong, by = c("SampleID" = "SampleID")) 
-
-OLISSpectraMeta <- OLISSpectraMeta %>%
-group_by(SampleID) %>%
-  arrange(ObsDate) %>%
-  mutate(E_days = as.numeric((ObsDate - ExpDate[1]))) %>%
-  mutate(SumAb = sum(Absorbance)) %>% 
-ungroup()
+# OLISSpectraMeta <- CultureCatalog %>%
+#   left_join(., TargetSpectraLong, by = c("SampleID" = "SampleID")) 
+# 
+# OLISSpectraMeta <- OLISSpectraMeta %>%
+# group_by(SampleID) %>%
+#   arrange(ObsDate) %>%
+#   mutate(E_days = as.numeric((ObsDate - ExpDate[1]))) %>%
+#   mutate(SumAb = sum(Absorbance)) %>% 
+# ungroup()
 
 # OLISSpectraMeta <- OLISSpectraMeta %>%
 #   filter(nm >= 400 & nm <= 700)
 ```
+
+```{r}
+OLISSpectraMeta <-TargetSpectraLong %>% 
+  group_by(SampleID) %>%
+  mutate(SumAb = sum(Absorbance)) %>% 
+  ungroup() %>% 
+  mutate(Strain=case_when(SampleID=="SySl1111"~"Ulva1",
+         SampleID=="SySl2222"~"Ulva2", 
+         SampleID=="SySl333"~"Ulva3")) 
+
+OLISSpectraMeta <-OLISSpectraMeta %>% 
+mutate(across(nm, round, 0))
+
+```
+
 
 # Normalize spectra to 440 nm
 
@@ -159,14 +174,14 @@ ungroup()
 Absorbance440 <- OLISSpectraMeta %>% 
   filter(nm == 440) %>%
   mutate(Abs440 = Absorbance) %>%
-  select(SampleID, Strain, Abs440, Par_ue, Photoperiod, E_days)
+  select(SampleID, Strain, Abs440)
   
 OLISSpectraMeta440 <- OLISSpectraMeta %>%
   left_join(., Absorbance440) %>%
   mutate(AbsNorm440 = Absorbance / Abs440) 
   
 OLISSpectraMeta440 <- OLISSpectraMeta440 %>%
-group_by(SampleID, E_days, Par_ue, Photoperiod) %>%
+group_by(SampleID) %>%
   mutate(SumAbNorm = sum(AbsNorm440)) %>% 
 ungroup()
 ```

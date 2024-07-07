@@ -58,7 +58,7 @@ library("patchwork") # merging plots
 ```
 
 ```{r set project variables}
-Project <- "BalticO2"
+Project <- "Ulva"
 DataOut <- file.path("..", "Data", "ProcessedData", "ProcessedOlisJazData")
 DataInOlis <- file.path("..", "Data", "ImportedData", "ImportedOlisData", fsep = .Platform$file.sep)
 DataInJaz <- file.path("..", "Data", "ImportedData", "ImportedJazEmData", fsep = .Platform$file.sep)
@@ -80,13 +80,13 @@ list.files(path = DataInJaz, pattern = Project, full.names = TRUE)
 ```
 
 ```{r read imported Olis file}
-OLISSpectraFile <- "../Data/ImportedData/ImportedOlisData/BalticO2_Imported_OlisData.Rds"
+OLISSpectraFile <- "../Data/ImportedData/ImportedOlisData/Ulva_Imported_OlisData.Rds"
 OLISSpectraFileName <- str_split(string = OLISSpectraFile, "/")[[1]][3] %>%
   str_remove(pattern = ".Rds")
 OLISSpectra <- readRDS(OLISSpectraFile)  %>%
   ungroup()
 
-JazFile <- "../Data/ImportedData/ImportedJazEmData/BalticO2_Imported_JazEmData.Rds"
+JazFile <- "../Data/ImportedData/ImportedJazEmData/Ulva_Imported_JazEmData.Rds"
 JazFileName <- str_split(string = JazFile, "/")[[1]][3] %>%
   str_remove(pattern = ".Rds")
 JazData <- readRDS(JazFile)  %>%
@@ -101,178 +101,57 @@ JazData<-JazData %>%
   select(-c(MCMeasuredPar_uE, MCSetPar_uE))
 ```
 
-# Normalize Jaz emission to 405 nm
-
-```{r Normalization Jaz emission at 405}
-EmissionJaz405 <- JazData %>%
-  filter(WL==405) %>% 
-  filter(MCEm_nm == 393) %>%
-  mutate(EmJaz393 = Emission) %>%
-  select(EmJaz393) 
-
-JazDataRoundMeta405 <- JazData %>%
-  filter(WL==405) %>% 
-  cross_join(., EmissionJaz405) %>%
-  mutate(EmNormJaz393 = Emission / EmJaz393)
-
-rm(EmissionJaz405)
-```
-
-# Normalize Jaz emission to 450 nm
-
-```{r Normalization Jaz emission at 450}
-EmissionJaz450 <- JazData %>%
-  filter(WL==450) %>% 
-  filter(MCEm_nm == 441) %>%
-  mutate(EmJaz441 = Emission) %>%
-  select(EmJaz441)
-
-JazDataRoundMeta450 <- JazData %>%
-  filter(WL==450) %>% 
-  cross_join(., EmissionJaz450) %>%
-  mutate(EmNormJaz441 = Emission / EmJaz441)
-
-rm(EmissionJaz450)
-```
-
-# Normalize Jaz emission to 470 nm
-
-```{r Normalization Jaz emission at 470}
-EmissionJaz470 <- JazData %>%
-  filter(WL==470) %>% 
-  filter(MCEm_nm == 469) %>%
-  mutate(EmJaz469 = Emission) %>%
-  select(EmJaz469) 
-
-JazDataRoundMeta470 <- JazData %>%
-  filter(WL==470) %>% 
-  cross_join(., EmissionJaz470) %>%
-  mutate(EmNormJaz469 = Emission / EmJaz469)
-
-rm(EmissionJaz470)
-```
-
-# Normalize Jaz emission to 530 nm
-
-```{r Normalization Jaz emission at 530}
-EmissionJaz530 <- JazData %>%
-  filter(WL==530) %>% 
-  filter(MCEm_nm == 521) %>%
-  mutate(EmJaz521 = Emission) %>%
-  select(EmJaz521)
-
-JazDataRoundMeta530 <- JazData %>%
-  filter(WL==530) %>% 
-  cross_join(., EmissionJaz530) %>%
-  mutate(EmNormJaz521 = Emission / EmJaz521)
-
-rm(EmissionJaz530)
-```
-
-# Normalize Jaz emission to 620 nm
-
-```{r Normalization Jaz emission at 620}
-EmissionJaz620 <- JazData %>%
-  filter(WL==620) %>% 
-  filter(MCEm_nm == 612) %>%
-  mutate(EmJaz612 = Emission) %>%
-  select(EmJaz612) 
-
-JazDataRoundMeta620 <- JazData %>%
-  filter(WL==620) %>% 
-  cross_join(., EmissionJaz620) %>%
-  mutate(EmNormJaz612 = Emission / EmJaz612)
-
-rm(EmissionJaz620)
-```
-
-# Normalize Jaz emission to 660 nm
-
-```{r Normalization Jaz emission at 660}
-EmissionJaz660 <- JazData %>%
-  filter(WL==660) %>% 
-  filter(MCEm_nm == 647) %>%
-  mutate(EmJaz647 = Emission) %>%
-  select(EmJaz647)
-
-JazDataRoundMeta660 <- JazData %>%
-  filter(WL==660) %>% 
-  cross_join(., EmissionJaz660) %>%
-  mutate(EmNormJaz647 = Emission / EmJaz647)
-
-rm(EmissionJaz660)
-```
-
-# Normalize Jaz emission to 730 nm
-
-```{r Normalization Jaz emission at 730}
-EmissionJaz730 <- JazData %>%
-  filter(WL==730) %>% 
-  filter(MCEm_nm == 722) %>%
-  mutate(EmJaz722 = Emission) %>%
-  select(EmJaz722) 
-
-JazDataRoundMeta730 <- JazData %>%
-  filter(WL==730) %>% 
-  cross_join(., EmissionJaz730) %>%
-  mutate(EmNormJaz722 = Emission / EmJaz722)
-
-rm(EmissionJaz730)
-```
 
 # Normalize Jaz emission to WW
 
 ```{r Normalization Jaz emission at WW}
 EmissionJazWW <- JazData %>%
   filter(WL== "WW") %>%
-  filter(MCEm_nm == 600) %>%
-  mutate(EmJaz600 = Emission) %>%
-  select(EmJaz600) 
+  filter(MCEm_nm == 439) %>%
+  mutate(EmJaz439 = Emission) %>%
+  select(EmJaz439) 
 
 JazDataRoundMetaWW <- JazData %>%
   filter(WL== "WW") %>%
   cross_join(., EmissionJazWW) %>%
-  mutate(EmNormJaz600 = Emission / EmJaz600)
+  mutate(EmNormJaz439 = Emission / EmJaz439)
 
 rm(EmissionJazWW)
 ```
+
 # Merge df to have all WL
 
 ```{r}
-JazDataRoundMeta1 <- JazDataRoundMeta730 %>%
-  full_join(., JazDataRoundMetaWW, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz"))
- 
-JazDataRoundMeta2 <- JazDataRoundMeta1 %>%
-  full_join(., JazDataRoundMeta660, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
-
-JazDataRoundMeta3 <- JazDataRoundMeta2 %>%
-  full_join(., JazDataRoundMeta620, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
-
-JazDataRoundMeta4 <- JazDataRoundMeta3 %>%
-  full_join(., JazDataRoundMeta530, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
-
-JazDataRoundMeta5 <- JazDataRoundMeta4 %>%
-  full_join(., JazDataRoundMeta470, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
-
-JazDataRoundMeta6 <- JazDataRoundMeta5 %>%
-  full_join(., JazDataRoundMeta450, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
-
-JazDataRoundMeta <- JazDataRoundMeta6 %>%
-  full_join(., JazDataRoundMeta405, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
-
-
-rm(JazDataRoundMeta1, JazDataRoundMeta2, JazDataRoundMeta3, JazDataRoundMeta4, JazDataRoundMeta5, JazDataRoundMeta6, JazDataRoundMeta405, JazDataRoundMeta450, JazDataRoundMeta470, JazDataRoundMeta530, JazDataRoundMeta620, JazDataRoundMeta660, JazDataRoundMeta730, JazDataRoundMetaWW)
+# JazDataRoundMeta1 <- JazDataRoundMeta730 %>%
+#   full_join(., JazDataRoundMetaWW, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz"))
+#  
+# JazDataRoundMeta2 <- JazDataRoundMeta1 %>%
+#   full_join(., JazDataRoundMeta660, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
+# 
+# JazDataRoundMeta3 <- JazDataRoundMeta2 %>%
+#   full_join(., JazDataRoundMeta620, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
+# 
+# JazDataRoundMeta4 <- JazDataRoundMeta3 %>%
+#   full_join(., JazDataRoundMeta530, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
+# 
+# JazDataRoundMeta5 <- JazDataRoundMeta4 %>%
+#   full_join(., JazDataRoundMeta470, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
+# 
+# JazDataRoundMeta6 <- JazDataRoundMeta5 %>%
+#   full_join(., JazDataRoundMeta450, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
+# 
+# JazDataRoundMeta <- JazDataRoundMeta6 %>%
+#   full_join(., JazDataRoundMeta405, by = c("FilenameJaz"= "FilenameJaz", "WL" = "WL", "MCEm_nm" = "MCEm_nm", "Emission" = "Emission", "MC"="MC", "EmMax_nm"="EmMax_nm", "ObsDateJaz"="ObsDateJaz")) 
+# 
+# 
+# rm(JazDataRoundMeta1, JazDataRoundMeta2, JazDataRoundMeta3, JazDataRoundMeta4, JazDataRoundMeta5, JazDataRoundMeta6, JazDataRoundMeta405, JazDataRoundMeta450, JazDataRoundMeta470, JazDataRoundMeta530, JazDataRoundMeta620, JazDataRoundMeta660, JazDataRoundMeta730, JazDataRoundMetaWW)
 ```
 
-# Prepare O;isSpectra
+# Prepare OlisSpectra
+
 
 ```{r}
-OLISSpectra<-OLISSpectra %>% 
-  filter(Par_ue != 30)
-```
-
-```{r}
-JazDataRoundMeta<-JazDataRoundMeta %>% 
+JazDataRoundMeta<-JazDataRoundMetaWW %>% 
   select(-c(MC, Emission))
 ```
 
@@ -281,126 +160,26 @@ JazDataRoundMeta<-JazDataRoundMeta %>%
 
 ```{r combine Olis spectra and Jaz data}
 OLISSpectraMeta <- OLISSpectra %>%
-  full_join(., JazDataRoundMeta, by = c("nm" = "MCEm_nm", "WL" = "WL")) %>%
+  full_join(., JazDataRoundMeta, by = c("nm" = "MCEm_nm")) %>%
   unique()
 ```
 
 # Estimate PUR
 
 ```{r estimate PUR}
-OLISSpectraMetaPUR405 <- OLISSpectraMeta %>%
-  filter(WL==405) %>% 
-  mutate(PURNorm = (AbsNorm440*EmNormJaz393)) %>% 
-  group_by(WL, Strain, Par_ue, Photoperiod, E_days, O2) %>%
-  mutate(PURNormSum = sum(PURNorm)) %>% 
-  mutate(SumEmNormJaz = sum(EmNormJaz393)) %>% 
-  mutate(PUR = Par_ue*(PURNormSum/SumEmNormJaz)) %>% 
-  ungroup() 
-
-OLISSpectraMetaPUR450 <- OLISSpectraMeta %>%
-  filter(WL==450) %>% 
-  mutate(PURNorm = (AbsNorm440*EmNormJaz441)) %>% 
-  group_by(WL, Strain, Par_ue, Photoperiod, E_days, O2) %>%
-  mutate(PURNormSum = sum(PURNorm)) %>% 
-  mutate(SumEmNormJaz = sum(EmNormJaz441)) %>% 
-  mutate(PUR = Par_ue*(PURNormSum/SumEmNormJaz)) %>% 
-  ungroup() 
-
-OLISSpectraMetaPUR470 <- OLISSpectraMeta %>%
-  filter(WL==470) %>% 
-  mutate(PURNorm = (AbsNorm440*EmNormJaz469)) %>% 
-  group_by(WL, Strain, Par_ue, Photoperiod, E_days, O2) %>%
-  mutate(PURNormSum = sum(PURNorm)) %>% 
-  mutate(SumEmNormJaz = sum(EmNormJaz469)) %>% 
-  mutate(PUR = Par_ue*(PURNormSum/SumEmNormJaz)) %>% 
-  ungroup() 
-
-OLISSpectraMetaPUR530 <- OLISSpectraMeta %>%
-  filter(WL==530) %>% 
-  mutate(PURNorm = (AbsNorm440*EmNormJaz521)) %>% 
-  group_by(WL, Strain, Par_ue, Photoperiod, E_days, O2) %>%
-  mutate(PURNormSum = sum(PURNorm)) %>% 
-  mutate(SumEmNormJaz = sum(EmNormJaz521)) %>% 
-  mutate(PUR = Par_ue*(PURNormSum/SumEmNormJaz)) %>% 
-  ungroup() 
-
-OLISSpectraMetaPUR620 <- OLISSpectraMeta %>%
-  filter(WL==620) %>% 
-  mutate(PURNorm = (AbsNorm440*EmNormJaz612)) %>% 
-  group_by(WL, Strain, Par_ue, Photoperiod, E_days, O2) %>%
-  mutate(PURNormSum = sum(PURNorm)) %>% 
-  mutate(SumEmNormJaz = sum(EmNormJaz612)) %>% 
-  mutate(PUR = Par_ue*(PURNormSum/SumEmNormJaz)) %>% 
-  ungroup() 
-
-OLISSpectraMetaPUR660 <- OLISSpectraMeta %>%
-  filter(WL==660) %>% 
-  mutate(PURNorm = (AbsNorm440*EmNormJaz647)) %>% 
-  group_by(WL, Strain, Par_ue, Photoperiod, E_days, O2) %>%
-  mutate(PURNormSum = sum(PURNorm)) %>% 
-  mutate(SumEmNormJaz = sum(EmNormJaz647)) %>% 
-  mutate(PUR = Par_ue*(PURNormSum/SumEmNormJaz)) %>% 
-  ungroup() 
-
-OLISSpectraMetaPUR730 <- OLISSpectraMeta %>%
-  filter(WL==730) %>% 
-  mutate(PURNorm = (AbsNorm440*EmNormJaz722)) %>% 
-  group_by(WL, Strain, Par_ue, Photoperiod, E_days, O2) %>%
-  mutate(PURNormSum = sum(PURNorm)) %>% 
-  mutate(SumEmNormJaz = sum(EmNormJaz722)) %>% 
-  mutate(PUR = Par_ue*(PURNormSum/SumEmNormJaz)) %>% 
-  ungroup() 
 
 OLISSpectraMetaPURWW <- OLISSpectraMeta %>%
   filter(WL=="WW") %>% 
-  mutate(PURNorm = (AbsNorm440*EmNormJaz600)) %>% 
-  group_by(WL, Strain, Par_ue, Photoperiod, E_days, O2) %>%
+  mutate(PURNorm = (AbsNorm440*EmNormJaz439)) %>% 
+  group_by(WL, Strain) %>%
   mutate(PURNormSum = sum(PURNorm)) %>% 
-  mutate(SumEmNormJaz = sum(EmNormJaz600)) %>% 
-  mutate(PUR = Par_ue*(PURNormSum/SumEmNormJaz)) %>% 
+  mutate(SumEmNormJaz = sum(EmNormJaz439)) %>% 
+  mutate(PUR = 100*(PURNormSum/SumEmNormJaz)) %>% 
   ungroup() 
 
-OLISSpectraMetaPUR<-rbind(OLISSpectraMetaPUR405, OLISSpectraMetaPUR450, OLISSpectraMetaPUR470, OLISSpectraMetaPUR530, OLISSpectraMetaPUR620, OLISSpectraMetaPUR660, OLISSpectraMetaPUR730, OLISSpectraMetaPURWW)
-
-rm(OLISSpectraMetaPUR405, OLISSpectraMetaPUR450, OLISSpectraMetaPUR470, OLISSpectraMetaPUR530, OLISSpectraMetaPUR620, OLISSpectraMetaPUR660, OLISSpectraMetaPUR730, OLISSpectraMetaPURWW)
+OLISSpectraMetaPUR <- OLISSpectraMetaPURWW 
 ```
 
-# Filter unrevelant data
-
-```{r filter unrevelant data}
-OLISSpectraMetaPUR<-OLISSpectraMetaPUR %>% 
-  filter(PUR>=0) %>% 
-  filter(PUR<=180)
-```
-
-# Calculate daily PUR photon dose
-
-```{r calculate PUR Photon dose}
-OLISSpectraMetaPUR <- OLISSpectraMetaPUR %>%
-  mutate(PURPhotonDose_day =(PUR/2)*Photoperiod*3600)
-
-```
-
-
-```{r Changes strain names}
-OLISSpectraMetaPUR <- OLISSpectraMetaPUR %>%
-      mutate(Strain=case_when(Strain=="BA127R"~"PE-rich",
-         Strain=="BA77G"~"PC-rich")) %>% 
-      mutate(Oxygen=case_when(O2==21~"250~µM",
-         O2==0~"2.5~µM"))
-```
-
-```{r}
-# OLISSpectraMetaPUR <- OLISSpectraMetaPUR %>%
-#   mutate(Strain=case_when(Strain=="BA127R"~"PE-rich",
-#          Strain=="BA77G"~"PC-rich"))
-```
-
-
-```{r}
-OLISSpectraMetaPUR<-OLISSpectraMetaPUR %>% 
-    filter(WL!="WW") 
-```
 
 
 # Create plot
@@ -409,65 +188,30 @@ OLISSpectraMetaPUR<-OLISSpectraMetaPUR %>%
 ```{r Create plot}
 
 OLISSpectraMetaPUR %>%
-  filter(E_days == 7 | E_days == 6) %>% 
   ggplot() +
-  geom_line(aes(x = nm, y = AbsNorm440, colour = as.factor(Strain), linetype = as.factor(O2)), show.legend = T, size = 0.4) +
-  scale_color_manual(values = c("PC-rich" ="palegreen3", "PE-rich" ="brown4")) +
-  ggh4x::facet_nested(cols = vars(Strain), rows = vars(WL),labeller = labeller(Ex_WL = label_value, WL = label_value)) +
-  # ggh4x::facet_nested(cols = vars(WL),   rows = vars(factor(O2, levels=c("21","0"))),labeller = labeller(Ex_WL = label_value, WL = label_value)) +
-  theme_bw() 
-
-OLISSpectraMetaPUR %>%
-  filter(E_days == 7 | E_days == 6) %>% 
-  ggplot() +
-  geom_line(aes(x = nm, y = Absorbance, colour = as.factor(Strain), linetype = as.factor(O2)), show.legend = T, size = 0.4) +
-  scale_color_manual(values = c("PC-rich" ="palegreen3", "PE-rich" ="brown4")) +
-  ggh4x::facet_nested(cols = vars(Strain), rows = vars(WL),labeller = labeller(Ex_WL = label_value, WL = label_value)) +
-  # ggh4x::facet_nested(cols = vars(WL),   rows = vars(factor(O2, levels=c("21","0"))),labeller = labeller(Ex_WL = label_value, WL = label_value)) +
-  theme_bw() 
-
-
-
-
-
-OLISSpectraMetaPUR %>%
-  #filter(E_days == 7 | E_days == 8 | E_days == 6) %>% 
-  ggplot() +
-  # geom_area(aes(x = nm, y = EmNormJaz722, fill = "gray84"), alpha = 0.6, show.legend = F) +
-  # geom_area(aes(x = nm, y = EmNormJaz647, fill = "gray84"), alpha = 0.6, show.legend = F) +
-  # geom_area(aes(x = nm, y = EmNormJaz612, fill = "gray84"), alpha = 0.6, show.legend = F) +
-  # geom_area(aes(x = nm, y = EmNormJaz521, fill = "gray84"), alpha = 0.6, show.legend = F) +
-  # geom_area(aes(x = nm, y = EmNormJaz469, fill = "gray84"), alpha = 0.6, show.legend = F) +
-  # geom_area(aes(x = nm, y = EmNormJaz441, fill = "gray84"), alpha = 0.6, show.legend = F) +
-  # geom_area(aes(x = nm, y = EmNormJaz393, fill = "gray84"), alpha = 0.6, show.legend = F) +
   geom_line(aes(x = nm, y = AbsNorm440, colour = as.factor(Strain)), show.legend = T, size = 0.4) +
-  scale_color_manual(values = c("PC-rich" ="palegreen3", "PE-rich" ="brown4")) +
-  # scale_linetype_manual(values = c("PC-rich_077" ="solid", "PE-rich_127" ="longdash")) +
+  geom_area(aes(x = nm, y = EmNormJaz439, fill = "gray60"), alpha = 0.6, show.legend = F) +
+  scale_color_manual(values = c("Ulva1" ="palegreen3", "Ulva2" ="brown4", "Ulva3" ="blue")) +
   stat_wl_strip(aes(x = nm), ymin = -Inf, ymax = -0.025, alpha = 0.5) +
   scale_fill_identity() +
-  #labs(y = "Normalized absorbance", x = "Wavelength (nm)") +
-  scale_y_continuous(breaks=seq(0, 1.2, by = 0.4)) +
-  coord_cartesian(ylim = c (-0.01, 1.6)) +
-  ggh4x::facet_nested(cols = vars(WL), rows = vars(O2),labeller = labeller(Ex_WL = label_value, WL = label_value)) +
-  # ggh4x::facet_nested(cols = vars(WL),   rows = vars(factor(O2, levels=c("21","0"))),labeller = labeller(Ex_WL = label_value, WL = label_value)) +
-  theme_bw() 
-
-
-OLISSpectraMetaPUR %>%
-  filter(E_days == 7 | E_days == 6) %>% 
-  ggplot() +
-  geom_line(aes(x = nm, y = Absorbance, colour = as.factor(Strain)), show.legend = T, size = 0.4) +
-  scale_color_manual(values = c("PC-rich" ="palegreen3", "PE-rich" ="brown4")) +
-  # scale_linetype_manual(values = c("PC-rich_077" ="solid", "PE-rich_127" ="longdash")) +
-  stat_wl_strip(aes(x = nm), ymin = -Inf, ymax = -0.025, alpha = 0.5) +
-  scale_fill_identity() +
-  #labs(y = "Normalized absorbance", x = "Wavelength (nm)") +
+    #labs(y = "Normalized absorbance", x = "Wavelength (nm)") +
   # scale_y_continuous(breaks=seq(0, 1.2, by = 0.4)) +
   # coord_cartesian(ylim = c (-0.01, 1.6)) +
-  ggh4x::facet_nested(cols = vars(WL), rows = vars(O2),labeller = labeller(Ex_WL = label_value, WL = label_value)) +
-  # ggh4x::facet_nested(cols = vars(WL),   rows = vars(factor(O2, levels=c("21","0"))),labeller = labeller(Ex_WL = label_value, WL = label_value)) +
+  ggh4x::facet_nested(cols = vars(Strain), rows = vars(WL),labeller = labeller(Ex_WL = label_value, WL = label_value)) +
   theme_bw() 
+
+
+ 
 ```
+
+
+
+
+
+
+
+
+
 # Mean from the absorbance
 
 
