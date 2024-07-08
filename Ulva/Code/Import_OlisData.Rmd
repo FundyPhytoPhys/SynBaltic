@@ -172,7 +172,7 @@ mutate(across(nm, round, 0))
 
 ```{r normalization at 440, warning = FALSE, echo=FALSE}
 Absorbance440 <- OLISSpectraMeta %>% 
-  filter(nm == 440) %>%
+  filter(nm == 420) %>%
   mutate(Abs440 = Absorbance) %>%
   select(SampleID, Strain, Abs440)
   
