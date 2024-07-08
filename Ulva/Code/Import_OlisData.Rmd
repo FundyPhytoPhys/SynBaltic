@@ -199,6 +199,36 @@ OLISSpectraMeta440<-OLISSpectraMeta440 %>%
 rm(Absorbance440, CultureCatalog, TargetSpectra, OLISSpectraMeta, TargetSpectraLong)
 ```
 
+```{r Create plot}
+
+OLISSpectraMeta440 %>%
+  ggplot() +
+  geom_line(aes(x = nm, y = Absorbance, colour = as.factor(Strain)), show.legend = T, size = 0.4) +
+  scale_color_manual(values = c("Ulva1" ="palegreen3", "Ulva2" ="brown4", "Ulva3" ="blue")) +
+  # stat_wl_strip(aes(x = nm), ymin = -Inf, ymax = -0.025, alpha = 0.5) +
+  # scale_fill_identity() +
+    #labs(y = "Normalized absorbance", x = "Wavelength (nm)") +
+  # scale_y_continuous(breaks=seq(0, 1.2, by = 0.4)) +
+  # coord_cartesian(ylim = c (-0.01, 1.6)) +
+  ggh4x::facet_nested(cols = vars(Strain), labeller = labeller(Ex_WL = label_value, WL = label_value)) +
+  theme_bw() 
+
+
+OLISSpectraMeta440 %>%
+  ggplot() +
+  geom_line(aes(x = nm, y = AbsNorm440, colour = as.factor(Strain)), show.legend = T, size = 0.4) +
+  scale_color_manual(values = c("Ulva1" ="palegreen3", "Ulva2" ="brown4", "Ulva3" ="blue")) +
+  # stat_wl_strip(aes(x = nm), ymin = -Inf, ymax = -0.025, alpha = 0.5) +
+  # scale_fill_identity() +
+    #labs(y = "Normalized absorbance", x = "Wavelength (nm)") +
+  # scale_y_continuous(breaks=seq(0, 1.2, by = 0.4)) +
+  # coord_cartesian(ylim = c (-0.01, 1.6)) +
+  ggh4x::facet_nested(cols = vars(Strain), labeller = labeller(Ex_WL = label_value, WL = label_value)) +
+  theme_bw() 
+ 
+```
+
+
 # Save rds for further analysis
 
 ```{r save rds}
