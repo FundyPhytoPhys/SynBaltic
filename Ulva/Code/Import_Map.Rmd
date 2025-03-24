@@ -188,18 +188,18 @@ dat$visited <- ifelse(dat$`iso-a3` %in% countries_visited, 1, 0)
 head(dat)
 ```
 ```{r}
-hcmap(
-  map = "custom/world-highres3", # high resolution world map
-  data = dat, # name of dataset
-  joinBy = "iso-a3",
-  value = "visited",
-  showInLegend = FALSE, # hide legend
-  nullColor = "#DADADA",
-  download_map_data = TRUE
-) %>%
-  hc_mapNavigation(enabled = FALSE) %>%
-  hc_legend("none") %>% 
-  hc_title(text = "World map") # title
+# hcmap(
+#   map = "custom/world-highres3", # high resolution world map
+#   data = dat, # name of dataset
+#   joinBy = "iso-a3",
+#   value = "visited",
+#   showInLegend = FALSE, # hide legend
+#   nullColor = "#DADADA",
+#   download_map_data = TRUE
+# ) %>%
+#   hc_mapNavigation(enabled = FALSE) %>%
+#   hc_legend("none") %>% 
+#   hc_title(text = "World map") # title
 ```
 
 ----------------------------------------------------------
@@ -211,15 +211,17 @@ head(world)
 
 https://stackoverflow.com/questions/51350763/borders-and-colors-on-world-map-ggplot2
 
+
+
 ```{r}
 d=data.frame(x1=c(-Inf), x2=c(Inf), y1=c(-Inf), y2=c(Inf))
 
 worldGB<-world %>% 
-  filter(region == "China" | region == "Japan" | region == "South Korea" | region == "India" |
-         region == "France" | region == "Scotland" | region == "Italy" | region == "Portugal" |
-           region == "Finland" | region == "Netherlands" | region == "Ireland" | region == "South Africa" |
-           region == "Egypt" | region == "USA" | region == "New Caledonia" |
-           region == "Mexico" | region == "Argentina" | region == "Sweden" |region == "Germany" |region == "Australia" | region == "Brazil" | region == "Ghana" | region == "Poland")
+  filter(region == "China" | region == "Taiwan" | region == "Japan" | region == "South Korea" | region == "Philippines" |
+         region == "India" | region == "France" | region == "Portugal" | region == "Poland" | region == "Ireland" |
+           region == "USA" | region == "Mexico" | region == "Chile" | region == "Brazil" |
+           region == "Argentina" | region == "South Africa" | region == "Egypt" |
+           region == "Ghana")
 
 world <- map_data("world")
 
@@ -256,11 +258,101 @@ worldplot
 
 ```
 
+
+```{r}
+d=data.frame(x1=c(-Inf), x2=c(Inf), y1=c(-Inf), y2=c(Inf))
+
+worldGB<-world %>% 
+  filter(region == "China" | region == "Taiwan" | region == "Japan" | region == "South Korea" | region == "Philippines" |
+         region == "India" | region == "France" | region == "Portugal" | region == "Poland" | region == "Ireland" |
+           region == "USA" | region == "Mexico" | region == "Chile" | region == "Brazil" |
+           region == "Argentina" | region == "South Africa" | region == "Egypt" |
+           region == "Ghana")
+
+world <- map_data("world")
+world$facets <- c('italic(Ulva)~blooms~(2001~-~2025)')
+
+worldplot <- ggplot() +
+  geom_polygon(data = world, aes(x=long, y = lat, group = group), color = "gray80", fill = "gray80") + 
+  
+  #geom_map(data = world, map = world, aes(long, lat, map_id = region), color = "white", fill = "gray50", size = 0.2) +
+  #cadetblue4
+  
+    geom_polygon(data = worldGB, aes(x=long, y = lat, group = group), fill = "aquamarine4") + 
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), fill = "White", color="White", alpha=0.3) +
+    #geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), fill = "lightskyblue1", color="lightskyblue3", alpha=0.3) +
+  coord_fixed(1.3) +
+  labs(y = "Latitude", x = "Longitude") +
+  #ggh4x::facet_nested(cols = vars(facetsPhotoperiod24), labeller = label_parsed) +
+  ggh4x::facet_nested(cols = vars(facets), labeller = label_parsed) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text = element_text(size=14),
+        axis.title = element_text(size=18),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(size=14),
+        axis.title.y = element_text(margin=margin(r=10)),
+        # axis.title.x = element_text(margin=margin(t=10)),
+        #axis.title.x = element_blank(),
+        legend.background = element_rect(fill="transparent"),
+        legend.position = c(0.12,0.76),
+        legend.key.height= unit(0.005, 'cm'),
+        legend.spacing.x = unit(0.01, 'cm'),
+        legend.text = element_text(size=14))
+worldplot
+
+```
+
 ```{r save plot}
-ggsave(file = file.path(FigPath, paste("Fig_Map2",".png",sep = "")), height=8, width= 12,  dpi = 300, limitsize = TRUE)
+ggsave(file = file.path(FigPath, paste("Fig_Map2001",".png",sep = "")), height=6, width= 8,  dpi = 300, limitsize = TRUE)
 ```
 
 
 
+```{r}
+d=data.frame(x1=c(-Inf), x2=c(Inf), y1=c(-Inf), y2=c(Inf))
 
+worldGB<-world %>% 
+  filter(region == "South Africa" | region == "USA" | region == "Finland" | region == "Italy" |
+         region == "Netherlands" | region == "Portugal" | region == "France" | region == "Japan")
+
+world <- map_data("world")
+world$facets <- c('italic(Ulva)~blooms~(1978~-~2000)')
+
+worldplot <- ggplot() +
+  geom_polygon(data = world, aes(x=long, y = lat, group = group), color = "gray80", fill = "gray80") + 
+  
+  #geom_map(data = world, map = world, aes(long, lat, map_id = region), color = "white", fill = "gray50", size = 0.2) +
+  #cadetblue4
+  
+    geom_polygon(data = worldGB, aes(x=long, y = lat, group = group), fill = "aquamarine4") + 
+    geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), fill = "White", color="White", alpha=0.3) +
+    #geom_rect(data=d, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), fill = "lightskyblue1", color="lightskyblue3", alpha=0.3) +
+  coord_fixed(1.3) +
+  labs(y = "Latitude", x = "Longitude") +
+  #ggh4x::facet_nested(cols = vars(facetsPhotoperiod24), labeller = label_parsed) +
+  ggh4x::facet_nested(cols = vars(facets), labeller = label_parsed) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text = element_text(size=14),
+        axis.title = element_text(size=18),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(size=14),
+        axis.title.y = element_text(margin=margin(r=10)),
+        # axis.title.x = element_text(margin=margin(t=10)),
+        #axis.title.x = element_blank(),
+        legend.background = element_rect(fill="transparent"),
+        legend.position = c(0.12,0.76),
+        legend.key.height= unit(0.005, 'cm'),
+        legend.spacing.x = unit(0.01, 'cm'),
+        legend.text = element_text(size=14))
+worldplot
+
+```
+
+```{r save plot}
+ggsave(file = file.path(FigPath, paste("Fig_Map1978",".png",sep = "")), height=6, width= 8,  dpi = 300, limitsize = TRUE)
+```
 
