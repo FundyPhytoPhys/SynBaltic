@@ -356,3 +356,118 @@ worldplot
 ggsave(file = file.path(FigPath, paste("Fig_Map1978",".png",sep = "")), height=6, width= 8,  dpi = 300, limitsize = TRUE)
 ```
 
+
+# Import MetaData 
+
+```{r load Catalog direct from googlesheet, results = "hide", warning = FALSE, echo=FALSE}
+gs4_deauth()
+# this is the URL or ID of a Sheet readable by anyone (with a link)
+CultureCatalog <- read_sheet("https://docs.google.com/spreadsheets/d/1x6yhxll8t8xt469HmmvDqMXXnsK0GvS1xccpR8HKy98/edit?gid=0#gid=0")           
+```
+
+```{r Create plot, fig.height = 6, fig.width = 10}
+
+
+ CultureCatalog %>%
+  ggplot() +
+
+  geom_point(aes(x = target, y = ilosc_organizmow, colour = as.factor(ulva_rodzaj)), show.legend = T, size = 3.5) +
+  #scale_color_manual(values = c("Ulva1" ="black", "Ulva2" ="black", "Ulva3" ="black")) +
+  #scale_color_manual(values = c("Ulva1" ="palegreen3", "Ulva2" ="yellow4", "Ulva3" ="darkslategray")) +
+
+
+  # labs(y = "Normalized absorbance and emission spectra", x = "Wavelength (nm)") +
+  # scale_y_continuous(breaks=seq(0, 1.2, by = 0.4)) +
+  # coord_cartesian(ylim = c (0, 1.2)) +
+  #ggh4x::facet_nested(cols = vars(target), labeller = labeller(Ex_WL = label_value, WL = label_value)) +
+  #ggh4x::facet_nested(cols = vars(factor(Strain, levels=c("Ulva1", "Ulva3", "Ulva2"))), labeller = label_parsed) +
+  theme_bw() +
+     theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text = element_text(size=12),
+        axis.text.x = element_text(size=12),
+        axis.title = element_text(size=16),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=10)),
+        axis.title.x = element_text(margin=margin(t=10)),
+        legend.background = element_rect(fill="transparent"),
+        legend.key = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.75,0.94),
+        legend.text = element_text(size=10))
+```
+
+
+
+```{r Create plot, fig.height = 6, fig.width = 10}
+
+ CultureCatalog %>%
+  ggplot() +
+  geom_point(aes(x = ulva_rodzaj, y = ilosc_organizmow, fill = as.factor(target_combine)), show.legend = F, size = 4, shape=21, stroke=0.5, colour = "black") +
+  geom_segment(aes(x = ulva_rodzaj, xend = ulva_rodzaj, y = 0, yend = ilosc_organizmow)) +
+  scale_fill_manual(values = c("Heterotrophs" ="burlywood3", "Algae" ="darkcyan", "Animals" ="coral4")) +
+  labs(y = "Amount of tested taxa", x = "Ulva species") +
+  ggh4x::facet_nested(cols = vars(factor(target_combine, levels=c("Heterotrophs", "Algae", "Animals"))), labeller = label_parsed) +
+    theme_bw() +
+     theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text = element_text(size=12),
+        #axis.text.x = element_text(size=12),
+        axis.text.x = element_text(size=12, angle = 60, vjust = 1, hjust = 1),
+        axis.title = element_text(size=16),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=10)),
+        axis.title.x = element_text(margin=margin(t=10)),
+        legend.background = element_rect(fill="transparent"),
+        legend.key = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.75,0.94),
+        legend.text = element_text(size=10))
+
+
+```
+
+
+```{r save plot}
+ggsave(file = file.path(FigPath, paste("Fig_lolli",".png",sep = "")), height=6, width= 8,  dpi = 300, limitsize = TRUE)
+```
+
+
+```{r Create plot, fig.height = 6, fig.width = 10}
+
+ CultureCatalog %>%
+  ggplot() +
+  geom_point(aes(x = ulva_rodzaj, y = ilosc_organizmow, fill = as.factor(target_combine)), show.legend = F, size = 4, shape=21, stroke=0.5, colour = "black") +
+  geom_segment(aes(x = ulva_rodzaj, xend = ulva_rodzaj, y = 0, yend = ilosc_organizmow)) +
+  scale_fill_manual(values = c("Heterotrophs" ="burlywood3", "Algae" ="darkcyan", "Animals" ="coral4")) +
+  labs(y = "Amount of tested taxa", x = "Ulva species") +
+  ggh4x::facet_nested(cols = vars(factor(target_combine, levels=c("Heterotrophs", "Algae", "Animals"))), labeller = label_parsed) +
+  geom_hline(yintercept=0) +
+  coord_flip() +
+    theme_bw() +
+     theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text = element_text(size=12),
+        #axis.text.x = element_text(size=12),
+        axis.text.x = element_text(size=12),
+        axis.title = element_text(size=16),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=10)),
+        axis.title.x = element_text(margin=margin(t=10)),
+        legend.background = element_rect(fill="transparent"),
+        legend.key = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.75,0.94),
+        legend.text = element_text(size=10))
+
+
+```
+
+```{r save plot}
+ggsave(file = file.path(FigPath, paste("Fig_lolli2",".png",sep = "")), height=5, width= 8,  dpi = 300, limitsize = TRUE)
+```
+
+
