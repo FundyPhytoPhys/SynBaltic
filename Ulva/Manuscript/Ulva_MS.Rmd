@@ -1,5 +1,5 @@
 ---
-title: "Ulva sp. as a hazardous material threatening the environment — A review"
+title: "*Ulva* sp. as a hazardous material threatening the environment — A review"
 
 author:
 - Gracjana Budzałek:
@@ -47,7 +47,7 @@ output:
   html_document:
     df_print: paged
   word_document:
-    reference_docx: Template.docx
+    reference_docx: Ulva_manuscript.docx
     code-folding: show
     keep_md: yes
     fig.caption: yes
@@ -57,10 +57,10 @@ output:
     - "--lua-filter=author-info-blocks.lua"
     - "--lua-filter=custom_filter.lua"
 bibliography:
-- BalticPhotoperiod.bib
+- PicoBaltic.bib
 - packages.bib
 - faultycitations.bib
-csl: "science-of-the-total-environment.csl"
+csl: "journal-of-hazardous-materials.csl"
 ---
 
 ```{r, import libraries, include = FALSE}
