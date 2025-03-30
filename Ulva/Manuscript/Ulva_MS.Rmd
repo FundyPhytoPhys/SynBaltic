@@ -122,7 +122,7 @@ The genus *Ulva* was first described by Carolus Linnaeus in Species Plantarum (L
 
 ```{r Ulvamorphology, fig.cap = Ulvamorphology_cap, fig.height = 8, fig.width = 6, echo = FALSE}
 Ulvamorphology_cap<- glue("Morphology of common *Ulva* species: (A) *Ulva compressa*; (B) *Ulva fasciata*; (C) *Ulva flexuosa*; (D) *Ulva intestinalis*; (E) *Ulva lactuca*; (F) *Ulva linza*; (G) *Ulva lobata*; (H) *Ulva ohnoi*; (I) *Ulva prolifera*; (J), or *Ulva rigida*.", .sep = " ")
-knitr::include_graphics(file.path(FiguresFP,"Ulvaex.png"))
+knitr::include_graphics(file.path(FiguresFP,"Ulvamorphology.png"))
 ```
 
 
@@ -148,7 +148,7 @@ Adaptation of the light-harvesting pigments is another key physiological feature
 
 ```{r SpectraUlva, fig.cap = SpectraUlva_cap, fig.height = 8, fig.width = 6, echo = FALSE}
 SpectraUlva_cap<- glue("Whole-cell absorbance spectra of (A) *Ulva ohnoi*; (B) *Ulva fasciata*; (C) *Ulva lactuca*, together with emission spectra of the white LED lamp (yellow area), normalized to emission at 440 nm, and PUR (green area). Peaks characteristic of known pigments are labeled: Chl *a*, chlorophyll *a*; Chl *b*, chlorophyll *b*; Car, carotenoids.", .sep = " ")
-knitr::include_graphics(file.path(FiguresFP,"Ulvaex.png"))
+knitr::include_graphics(file.path(FiguresFP,"SpectraUlva.png"))
 ```
 
 <br>
@@ -162,9 +162,9 @@ The frequency of massive Green Tides has increased worldwide (Smetacek & Zingone
 
 <br>
 
-```{r map, fig.cap = map_cap, fig.height = 8, fig.width = 6, echo = FALSE}
-map_cap<- glue("Number of viruses, heterotrophic bacteria, fungi (Heterotrophs), micro- and macroalgae (Algae), invertebrates and vertebrates (Animals) affected by Ulva genus.", .sep = " ")
-knitr::include_graphics(file.path(FiguresFP,"Ulvaex.png"))
+```{r Lolli, fig.cap = Lolli_cap, fig.height = 8, fig.width = 6, echo = FALSE}
+Lolli_cap<- glue("Number of viruses, heterotrophic bacteria, fungi (Heterotrophs), micro- and macroalgae (Algae), invertebrates and vertebrates (Animals) affected by Ulva genus.", .sep = " ")
+knitr::include_graphics(file.path(FiguresFP,"Lolli.png"))
 ```
 
 <br>
