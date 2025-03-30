@@ -57,7 +57,7 @@ Project <- "SynBaltic"
 DataOut <- file.path("..", "Ulva", "Output", "Rds")
 
 FigPath <- file.path("..", "Output", "Figures")
-RDSTablePath <- file.path("..", "Output", "TablesRDS")
+TableRdsPath <- file.path("..", "Output", "TablesRDS")
 ```
 
 ----------------------------------------Create map ----------------------------------------------
@@ -468,6 +468,22 @@ ggsave(file = file.path(FigPath, paste("Fig_lolli",".png",sep = "")), height=6, 
 
 ```{r save plot}
 ggsave(file = file.path(FigPath, paste("Fig_lolli2",".png",sep = "")), height=5, width= 8,  dpi = 300, limitsize = TRUE)
+```
+
+# Import Table2 
+
+```{r load Catalog direct from googlesheet, results = "hide", warning = FALSE, echo=FALSE}
+gs4_deauth()
+# this is the URL or ID of a Sheet readable by anyone (with a link)
+Tab2 <- read_sheet("https://docs.google.com/spreadsheets/d/1Efg9_AzTrYfYTN6NcSidSuameD5-mQOiLI5lA0aLPeE/edit?gid=0#gid=0")           
+```
+
+
+# Save RDS that create stats and tables
+
+```{r}
+saveRDS(Tab2, file.path(TableRdsPath, paste(Project, "Tab2.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
+
 ```
 
 
