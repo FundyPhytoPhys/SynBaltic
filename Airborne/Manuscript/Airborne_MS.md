@@ -129,7 +129,7 @@ The findings from our studies suggest that an increase in air temperature can st
 
 <br>
 
-![<span id="fig:Fig3"></span>**Fig. **3: Spearman’s rank correlation coefficients and their statistical significance between the number of  cyanobacteria and microalgae cells and environmental parameters, including air temperature (T_air), cyanobacteria biomass in the sea (B-G Algae), sea temperature (T_sea), primary production (PP), phytoplankton biomass  (Phypl) atmospheric pressure (P), relative humidity (Rh), and wind speed.](../Output/Figures/Fig.3.png)
+![<span id="fig:Fig3"></span>**Fig. **3: Spearman’s rank correlation coefficients and their statistical significance between the number of  cyanobacteria and microalgae cells and environmental parameters, including air temperature (T_air), cyanobacteria biomass in the sea (B-G Algae), sea temperature (T_sea), primary production (PP), phytoplankton biomass (Phypl), atmospheric pressure (P), relative humidity (Rh), and wind speed.](../Output/Figures/Fig.3.png)
 
 <br>
 
