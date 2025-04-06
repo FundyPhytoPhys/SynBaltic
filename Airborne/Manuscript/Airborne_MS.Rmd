@@ -156,7 +156,7 @@ The findings from our studies suggest that an increase in air temperature can st
 <br>
 
 ```{r Fig3, fig.cap = Fig3_cap, fig.height = 8, fig.width = 6, echo = FALSE}
-Fig3_cap<- glue("Spearman’s rank correlation coefficients and their statistical significance between the number of  cyanobacteria and microalgae cells and environmental parameters, including air temperature (T_air), cyanobacteria biomass in the sea (B-G Algae), sea temperature (T_sea), primary production (PP), phytoplankton biomass  (Phypl) atmospheric pressure (P), relative humidity (Rh), and wind speed.", .sep = " ")
+Fig3_cap<- glue("Spearman’s rank correlation coefficients and their statistical significance between the number of  cyanobacteria and microalgae cells and environmental parameters, including air temperature (T_air), cyanobacteria biomass in the sea (B-G Algae), sea temperature (T_sea), primary production (PP), phytoplankton biomass (Phypl), atmospheric pressure (P), relative humidity (Rh), and wind speed.", .sep = " ")
 knitr::include_graphics(file.path(FiguresFP,"Fig.3.png"))
 ```
 
@@ -189,7 +189,7 @@ The relationship between bioaerosols' size and deposition in the human respirato
 
 ```{r Fig4, fig.cap = Fig4_cap, fig.height = 8, fig.width = 6, echo = FALSE}
 Fig4_cap<- glue("Airborne cyanobacteria and algae affecting human health. a The occurrence of selected airborne cyanobacteria and microalgae in different cell size classes. b The most frequently recorded species of airborne cyanobacteria and microalgae from the air. c Effects of the penetration of airborne cyanobacteria and microalgae of various sizes into the human body.", .sep = " ")
-knitr::include_graphics(file.path(FiguresFP,"Fig.4_ssw2.png"))
+knitr::include_graphics(file.path(FiguresFP,"Fig44_ssw2.png"))
 ```
 
 <br>
