@@ -45,7 +45,7 @@ bibliography:
 - PicoBaltic.bib
 - packages.bib
 - faultycitations.bib
-csl: "nature-communications.csl"
+csl: "journal-of-hazardous-materials.csl"
 ---
 
 ```{r, import libraries, include = FALSE}
