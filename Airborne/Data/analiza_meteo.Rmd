@@ -1,0 +1,766 @@
+```{r}
+library(readxl)
+setwd("~/airborne_algae")
+
+#dane z meteo
+plik_excel <- "~/airborne_algae/dane_meteo20152020.xlsx"
+arkusze <- excel_sheets(plik_excel)
+print(arkusze)
+
+# Na tym arkuszu pracuję
+dane_2015 <- read_excel(plik_excel, sheet = arkusze[1])
+dane_2020 <- read_excel(plik_excel, sheet = arkusze[2])
+
+
+# Tu dane z ilością glonków i taxami 
+
+plik_excel <- "~/airborne_algae/dane_jakosciowe_zebrane.xlsx"
+arkusze <- excel_sheets(plik_excel)
+print(arkusze)
+
+# Na tym arkuszu pracuję
+dane_zebrane <- read_excel(plik_excel, sheet = arkusze[2])
+
+library(dplyr)
+library(lubridate)
+
+dane_zebrane <- dane_zebrane %>%
+  mutate(month = month(Data))
+# Jest jeden mały error w danych z 2015 i poniższa linijka go naprawia
+dane_2015$Date[1] <- format(as.Date(dane_2015$Date[1], format = "%d.%m.%y"), "%d.%m.%Y")
+```
+Obróbka 2015
+
+```{r}
+library(dplyr)
+library(lubridate)
+
+#Uśrednianie po miesiącach
+
+dane_2015 <- dane_2015 %>%
+  group_by(Month) %>%
+  mutate(av_T_sea = mean(T_sea)) %>%
+  mutate(av_T_air = mean(T_air))
+
+#Tylko dla miesięcy dla których prowadzono badania
+dane_2015_summary <- dane_2015 %>%
+  group_by(Month, Station) %>%
+  summarise(av_T_sea = mean(T_sea), av_T_air = mean(T_air), .groups = "drop") %>%
+  rename(T_sea_2015 = av_T_sea) %>%
+  rename(T_air_2015 = av_T_air)
+
+dane_2020_summary <- dane_2020 %>%
+  filter(Msc %in% c(4,6,8,10,11)) %>% 
+  select(Msc, T_air, T_sea) %>%
+  rename(T_air_2020 = T_air ) %>%
+  rename(T_sea_2020 = T_sea) %>%
+  rename(Month  = Msc)
+# To poniżej tylko dla porównania, chyba się później nie przyda
+Temp_2015_2020 <- dane_2015_summary %>%
+  left_join(dane_2020_summary, by = "Month") %>%
+  select(- Station)
+
+  
+```
+
+
+
+```{r 2020 meteo day by day}
+#Dane z 2020 z każdego dnia, wszystkie parametry
+#Raczej się niżej nie przydadza, już sprawdziłam i słabo wychodzą
+
+# Wybieranie danych
+setwd("~/airborne_algae")
+plik_excel <- "~/airborne_algae/meteo_2020_full.xlsx"
+arkusze <- excel_sheets(plik_excel)
+print(arkusze)
+
+# Na tym arkuszu pracuję
+dane_2020_all <- read_excel(plik_excel, sheet = arkusze[1])
+```
+```{r}
+# Obliczenie korelacji Spearmana
+# Z danych dzień po dniu są słabiutkie korelacje
+cor_Tsea <- cor(dane_2020_all$Count, dane_2020_all$T_sea, method = "spearman", use = "complete.obs")
+cor_Tair <- cor(dane_2020_all$Count, dane_2020_all$T_air, method = "spearman", use = "complete.obs")
+cor_WS <- cor(dane_2020_all$Count, dane_2020_all$WS, method = "spearman", use = "complete.obs")
+
+# Wyświetlenie wyników
+cor_Tsea
+cor_Tair
+cor_WS
+
+```
+```{r}
+# Ładowanie pakietu dplyr
+library(dplyr)
+
+# Przetwarzanie danych
+dane_2020_summarized <- dane_2020_all %>%
+  group_by(Data) %>%
+  summarise(
+    Count = sum(Count, na.rm = TRUE),  # Sumujemy Count
+    across(T_sea:RAIN, ~ mean(.x, na.rm = TRUE)) # Uśredniamy pozostałe kolumny
+  )
+
+# Wyświetlenie wyników
+head(dane_2020_summarized)
+
+```
+```{r}
+# Obliczenie korelacji Spearmana
+cor_T_sea <- cor(dane_2020_summarized$Count, dane_2020_summarized$T_sea, method = "spearman", use = "complete.obs")
+cor_T_air <- cor(dane_2020_summarized$Count, dane_2020_summarized$T_air, method = "spearman", use = "complete.obs")
+cor_WS <- cor(dane_2020_summarized$Count, dane_2020_summarized$WS, method = "spearman", use = "complete.obs")
+
+cor_RH <- cor(dane_2020_summarized$Count, dane_2020_summarized$RH, method = "spearman", use = "complete.obs")
+
+# Wyświetlenie wyników
+cat("Korelacja Spearmana między Count a T_sea:", cor_T_sea, "\n")
+cat("Korelacja Spearmana między Count a T_air:", cor_T_air, "\n")
+cat("Korelacja Spearmana między Count a WS:", cor_WS, "\n")
+cat("Korelacja Spearmana między Count a RH:", cor_RH, "\n")
+
+
+test_RH <- cor.test(dane_2020_summarized$Count, dane_2020_summarized$RH, method = "spearman", exact = FALSE)
+test_T_air<- cor.test(dane_2020_summarized$Count, dane_2020_summarized$T_air, method = "spearman", exact = FALSE)
+# Wyświetlenie wyników
+cat("Korelacja Spearmana między Count a RH:", test_RH$estimate, "p =", test_RH$p.value, "\n")
+cat("Korelacja Spearmana między Count a T_air:", test_T_air$estimate, "p =", test_RH$p.value, "\n")
+
+
+```
+
+```{r}
+library(ggplot2)
+library(gridExtra) # Do łączenia wykresów
+
+# Wykres Count vs T_sea
+p1 <- ggplot(dane_2020_summarized, aes(x = T_sea, y = Count)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "red") +
+  labs(title = "Count vs T_sea", x = "Temperatura wody (T_sea)", y = "Liczba glonów (Count)") +
+  theme_minimal()
+
+# Wykres Count vs T_air
+p2 <- ggplot(dane_2020_summarized, aes(x = T_air, y = Count)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "blue") +
+  labs(title = "Count vs T_air", x = "Temperatura powietrza (T_air)", y = "Liczba glonów (Count)") +
+  theme_minimal()
+
+# Wykres Count vs WS
+p3 <- ggplot(dane_2020_summarized, aes(x = WS, y = Count)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "green") +
+  labs(title = "Count vs WS", x = "Prędkość wiatru (WS)", y = "Liczba glonów (Count)") +
+  theme_minimal()
+
+# Łączenie wykresów w jednym oknie
+grid.arrange(p1, p2, p3, ncol = 2)
+
+```
+```{r usuwam max}
+
+
+
+library(dplyr)
+
+nowe <- dane_2020_summarized 
+  #filter(Count != 900) 
+
+
+nowe <- nowe %>%
+  filter(round(Count, 6) != round(1805.952381, 6)) 
+
+# Obliczenie korelacji Spearmana
+cor_T_sea <- cor(nowe$Count, nowe$T_sea, method = "spearman", use = "complete.obs")
+cor_T_air <- cor(nowe$Count, nowe$T_air, method = "spearman", use = "complete.obs")
+cor_WS <- cor(nowe$Count, nowe$WS, method = "spearman", use = "complete.obs")
+
+# Wyświetlenie wyników
+cat("Korelacja Spearmana między Count a T_sea:", cor_T_sea, "\n")
+cat("Korelacja Spearmana między Count a T_air:", cor_T_air, "\n")
+cat("Korelacja Spearmana między Count a WS:", cor_WS, "\n")
+
+
+# Obliczenie testów korelacji Spearmana z wartością p
+test_T_sea <- cor.test(nowe$Count, nowe$T_sea, method = "spearman", exact = FALSE)
+test_T_air <- cor.test(nowe$Count, nowe$T_air, method = "spearman", exact = FALSE)
+test_WS <- cor.test(nowe$Count, nowe$WS, method = "spearman", exact = FALSE)
+
+# Wyświetlenie wyników
+cat("Korelacja Spearmana między Count a T_sea:", test_T_sea$estimate, "p =", test_T_sea$p.value, "\n")
+cat("Korelacja Spearmana między Count a T_air:", test_T_air$estimate, "p =", test_T_air$p.value, "\n")
+cat("Korelacja Spearmana między Count a WS:", test_WS$estimate, "p =", test_WS$p.value, "\n")
+
+
+
+```
+
+```{r}
+# Dodanie kolumny z miesiącem
+nowe$Month <- format(as.Date(nowe$Data), "%m")
+
+# Funkcja do obliczania korelacji Spearmana z obsługą błędów
+safe_spearman <- function(x, y) {
+  if (sum(complete.cases(x, y)) > 1) {  # Sprawdzamy, czy są co najmniej 2 pełne obserwacje
+    return(cor.test(x, y, method = "spearman")$estimate)
+  } else {
+    return(NA)  # Jeśli nie, zwracamy NA
+  }
+}
+
+safe_p_value <- function(x, y) {
+  if (sum(complete.cases(x, y)) > 1) {
+    return(cor.test(x, y, method = "spearman")$p.value)
+  } else {
+    return(NA)
+  }
+}
+
+# Obliczanie korelacji i liczby pomiarów dla każdego miesiąca
+cor_monthly_p <- nowe %>%
+  group_by(Month) %>%
+  summarise(
+    n = sum(complete.cases(Count, T_sea, T_air, WS)), # Liczba pełnych obserwacji
+    cor_T_sea = safe_spearman(Count, T_sea),
+    p_T_sea = safe_p_value(Count, T_sea),
+    cor_T_air = safe_spearman(Count, T_air),
+    p_T_air = safe_p_value(Count, T_air),
+    cor_WS = safe_spearman(Count, WS),
+    p_WS = safe_p_value(Count, WS)
+  )
+
+# Wyświetlenie wyników
+print(cor_monthly_p)
+
+
+
+```
+
+```{r}
+library(lubridate)
+
+dane_2020_summer <- dane_2020_summarized %>%
+  filter(month(ymd(Data)) %in% c(6, 7, 8))
+
+cor_T_sea <- cor(dane_2020_summer$Count, dane_2020_summer$T_sea, method = "spearman", use = "complete.obs")
+cor_T_air <- cor(dane_2020_summer$Count, dane_2020_summer$T_air, method = "spearman", use = "complete.obs")
+cor_WS <- cor(dane_2020_summer$Count, dane_2020_summer$WS, method = "spearman", use = "complete.obs")
+
+# Wyświetlenie wyników
+cat("Korelacja Spearmana między Count a T_sea:", cor_T_sea, "\n")
+cat("Korelacja Spearmana między Count a T_air:", cor_T_air, "\n")
+cat("Korelacja Spearmana między Count a WS:", cor_WS, "\n")
+
+```
+
+```{r}
+#Chyba odtą cokolwiek ma sens - ale wczytywać trzeba też dane powyżej bo coś namieszałam heh
+
+
+# Wybieranie danych
+setwd("~/airborne_algae")
+plik_excel <- "~/airborne_algae/monthly_weather_average2020.xlsx"
+arkusze <- excel_sheets(plik_excel)
+print(arkusze)
+
+# Na tym arkuszu pracuję
+average_meteo2020 <- read_excel(plik_excel, sheet = arkusze[1])
+
+
+# Ładowanie pakietu dplyr
+library(dplyr)
+
+# Tworzenie nowej kolumny Month na podstawie daty
+dane_2020_summarized <- dane_2020_summarized %>%
+  mutate(Month = format(as.Date(Data), "%b")) # Pobranie 3-literowego skrótu nazwy miesiąca
+
+# Grupowanie danych po miesiącach i obliczenie sumy oraz średniej Count
+monthly_count_summary <- dane_2020_summarized %>%
+  group_by(Month) %>%
+  summarise(
+    Total_Count = sum(Count, na.rm = TRUE),   # Suma Count dla miesiąca
+    Mean_Count = mean(Count, na.rm = TRUE)    # Średnia Count dla miesiąca
+  )
+
+# Wyświetlenie wyników
+print(monthly_count_summary)
+
+
+
+```
+
+```{r Tu są dobre wyniki}
+
+# Połączenie danych po nazwie miesiąca
+merged_data <- monthly_count_summary %>%
+  inner_join(average_meteo2020, by = c("Month" = "Months"))
+
+# Obliczenie korelacji Spearmana
+spearman_test <- cor.test(merged_data$Mean_Count, merged_data$`Temp [°C]`, method = "spearman", exact = FALSE)
+
+cat("Korelacja Spearmana między Mean_Count a Temp [°C]:", spearman_test$estimate, "p =", spearman_test$p.value, "\n")
+
+# Inicjalizacja plot_frame do zapisu danych
+plot_frame <- data.frame(parameter = character(), coefficient = numeric(), p = numeric(), stringsAsFactors = FALSE)
+
+# Dodanie wyniku do plot_frame
+plot_frame <- rbind(plot_frame, data.frame(parameter = "T_air", 
+                                           coefficient = spearman_test$estimate, 
+                                           p = spearman_test$p.value))
+```
+```{r}
+```{r Policzone średnie dla msc parametry morskie}
+library(dplyr)
+library(lubridate)
+
+# Tworzenie nowego zbioru averaged_sea_parameter
+averaged_sea_parameter <- dane_2020_summarized %>%
+  mutate(Month = month(Data, label = TRUE, abbr = TRUE)) %>%  # Wyodrębnienie miesiąca
+  group_by(Month) %>%  # Grupowanie po miesiącach
+  summarise(across(c("T_sea", "PP", "Sinice", "Fitoplankton", "NNO3", "NPO4"), mean, na.rm = TRUE))  
+
+merged_sea <- monthly_count_summary %>%
+  inner_join(averaged_sea_parameter, by = c("Month" = "Month"))
+
+# Średnie wartości
+
+# Podgląd nowego zbioru danych
+head(averaged_sea_parameter)
+
+```
+```
+
+
+
+
+```{r  funkcja do obliczania spearmana i p dla wszystkich parametrów na raz}
+library(dplyr)
+
+# Zmiana nazw kolumn
+cleaned_data <- merged_data  %>%
+  rename(T_air = `Temp [°C]`, Rh = `Rh [%]`, WS = `Ws [m s–1]`, P = `P [hPa]`, Rain = `Rain [mm]`)
+
+# Inicjalizacja plot_frame
+plot_frame <- data.frame(parameter = character(), coefficient = numeric(), p = numeric(), stringsAsFactors = FALSE)
+
+# Lista zmiennych do analizy
+variables <- c("T_air", "Rh", "WS", "P", "Rain")
+
+# Obliczenie korelacji Spearmana dla każdej zmiennej
+for (variable in variables) {
+  spearman_test <- cor.test(cleaned_data$Mean_Count, cleaned_data[[variable]], method = "spearman", exact = FALSE)
+  plot_frame <- rbind(plot_frame, data.frame(parameter = variable, coefficient = spearman_test$estimate, p = spearman_test$p.value))
+}
+
+# Wyświetlenie plot_frame
+print(plot_frame)
+
+
+
+# i parametry morskie
+
+# Połączenie danych z parametrami morskimi
+merged_sea <- monthly_count_summary %>%
+  inner_join(averaged_sea_parameter, by = c("Month" = "Month"))
+
+# Obliczenie korelacji Spearmana dla nowych zmiennych i dodanie do plot_frame
+new_variables <- c("T_sea", "PP", "Sinice", "Fitoplankton", "NNO3", "NPO4")
+
+for (variable in new_variables) {
+  spearman_test <- cor.test(merged_sea$Mean_Count, merged_sea[[variable]], method = "spearman", exact = FALSE)
+  plot_frame <- rbind(plot_frame, data.frame(parameter = variable, coefficient = spearman_test$estimate, p = spearman_test$p.value))
+}
+
+# Wyświetlenie plot_frame
+print(plot_frame)
+
+```
+
+
+```{r #LOlLIPOP}
+#LOlLIPOP plot
+
+
+# Aktualizacja wartości coefficient dla T_air
+plot_frame$coefficient[plot_frame$parameter == "T_air"] <- 0.755
+
+# Usuwamy NNO3, NPO4 i Rain
+plot_frame <- plot_frame[!plot_frame$parameter %in% c("NNO3", "NPO4", "Rain"), ]
+
+# Dodajemy kolory w zależności od wartości p
+plot_frame$color <- cut(plot_frame$p, 
+                         breaks = c(-Inf, 0.001, 0.01, 0.05, Inf), 
+                         labels = c("p < 0.001", "p < 0.01", "p < 0.05", "p > 0.05"))
+
+plot_frame$parameter <- gsub("Fitoplankton", "Phypl", plot_frame$parameter)
+plot_frame$parameter <- gsub("Sinice", "B-G Algae", plot_frame$parameter)
+
+
+
+
+# Tworzymy lollipop plot
+ggplot(plot_frame, aes(x = reorder(parameter, coefficient), y = coefficient, color = color)) +
+  geom_segment(aes(xend = parameter, y = 0, yend = coefficient), size = 1) +
+  geom_point(size = 5) +  # Główki lolipopów
+  scale_color_manual(values = c("p < 0.001" = "firebrick", "p < 0.01" = "darkorange2", "p < 0.05" = "yellow2", "p > 0.05" = "steelblue")) +
+  scale_y_continuous(breaks = seq(-1, 1, by = 0.25), limits = c(-1, 1)) +  # Wymuszenie zakresu osi Y od -1 do 1
+  coord_flip() +  # Obracamy wykres dla lepszej czytelności
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(hjust = 1, color = "black", size = 12),
+    axis.text.y = element_text(color = "black", size = 12),
+    axis.title.y = element_text(color = "black", size = 12),
+    axis.title.x = element_text(color = "black", size = 12),
+    legend.text = element_text(color = "black", size = 12),
+    legend.title = element_text(color = "black", size = 12),
+    legend.position = "right",
+    plot.title = element_text(color = "black", size = 12),
+    panel.grid.major = element_line(color = "grey", linetype = "dashed"),
+    panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
+    axis.line = element_line(color = "black")
+  ) +
+  labs(title = " ",
+       x = " ",
+       y = "Spearman Rank Coefficient",
+       color = "p-value")
+
+
+
+```
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+merged_data <- monthly_count_summary %>%
+  inner_join(average_meteo2020, by = c("Month" = "Months")) %>%
+  mutate(Month = factor(Month, levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
+# Wykres
+ggplot(merged_data, aes(x = Month)) +
+  
+  # Pierwsza oś Y - Mean_Count (pełna linia)
+  geom_line(aes(y = Mean_Count, group = 1, color = "Microalgae and cyanobacteria"), size = 1.2) +
+  geom_point(aes(y = Mean_Count, color = "Microalgae and cyanobacteria"), size = 3) +
+  
+  # Druga oś Y - Temp [°C] (przerywana linia)
+  geom_line(aes(y = `Temp [°C]` * 10, group = 1, color = "Temperature [°C]"), 
+            size = 1.2, linetype = "dashed") +
+  geom_point(aes(y = `Temp [°C]` * 10, color = "Temperature [°C]"), size = 3) +
+  
+  # Trzecia oś Y - Ws [m s–1] (kropkowana linia)
+  geom_line(aes(y = `Ws [m s–1]` * 20, group = 1, color = "Wind speed [m s⁻¹]"), 
+            size = 1.2, linetype = "dotted") +
+  geom_point(aes(y = `Ws [m s–1]` * 20, color = "Wind speed [m s⁻¹]"), size = 3) +
+  
+  # Skala pierwszej osi Y (dla Mean_Count) z poprawionym podpisem
+  scale_y_continuous(
+    name = expression("Average number of cells per m"^"-3"),  
+    sec.axis = sec_axis(~ . / 10, name = expression("Wind speed [m s"^-1*"] and air temperature [°C]")),
+    expand = expansion(mult = c(0.1, 0.1))
+  ) +
+  
+  # Kolory linii i punktów + nowa legenda
+  scale_color_manual(
+    name = "Legend",
+    values = c(
+      "Microalgae and cyanobacteria" = "coral2", 
+      "Temperature [°C]" = "darkorchid4", 
+      "Wind speed [m s⁻¹]" = "darkolivegreen3"
+    )
+  ) +
+  
+  # Etykiety
+  labs(
+    title = " ",
+    x = "Month"
+  ) +
+  
+  # Styl wykresu
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title.y = element_text(size = 12, color = "black"),
+    panel.grid.major = element_line(color = "grey80", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+```
+
+
+
+```{r}
+# Połączenie danych po nazwie miesiąca
+merged_sea <- monthly_count_summary %>%
+  inner_join(averaged_sea_parameter, by = c("Month" = "Month"))
+
+# Obliczenie korelacji Spearmana
+cor_mean_ws <- cor(merged_sea $Mean_Count, merged_sea$`T_sea`, method = "spearman")
+cor_total_ws <- cor(merged_sea $Total_Count, merged_sea$`T_sea`, method = "spearman")
+
+# Wyświetlenie wyników
+cat("Korelacja Spearmana między Mean_Count a T sea:", cor_mean_ws, "\n")
+cat("Korelacja Spearmana między Total_Count a T sea:", cor_total_ws, "\n")
+
+cor_test_mean <- cor.test(merged_sea$Mean_Count, merged_sea$`T_sea`, method = "spearman")
+cat("p-value:", cor_test_mean$p.value, "\n\n")
+```
+
+
+
+```{r}
+# Obliczenie korelacji Spearmana
+cor_mean_ws <- cor(merged_sea $Mean_Count, merged_sea$`PP`, method = "spearman")
+cor_total_ws <- cor(merged_sea $Total_Count, merged_sea$`PP`, method = "spearman")
+
+# Wyświetlenie wyników
+cat("Korelacja Spearmana między Mean_Count a PP:", cor_mean_ws, "\n")
+cat("Korelacja Spearmana między Total_Count a PP", cor_total_ws, "\n")
+
+cor_test_mean <- cor.test(merged_sea$Mean_Count, merged_sea$`PP`, method = "spearman")
+cat("p-value:", cor_test_mean$p.value, "\n\n")
+```
+```{r}
+# Obliczenie korelacji Spearmana
+cor_mean_ws <- cor(merged_sea $Mean_Count, merged_sea$`Fitoplankton`, method = "spearman")
+cor_total_ws <- cor(merged_sea $Total_Count, merged_sea$`Fitoplankton`, method = "spearman")
+
+# Wyświetlenie wyników
+cat("Korelacja Spearmana między Mean_Count a Fitoplankton:", cor_mean_ws, "\n")
+cat("Korelacja Spearmana między Total_Count a Fitoplankton", cor_total_ws, "\n")
+```
+
+```{r}
+# Obliczenie korelacji Spearmana
+cor_mean_ws <- cor(merged_sea $Mean_Count, merged_sea$`NNO3`, method = "spearman")
+cor_total_ws <- cor(merged_sea $Total_Count, merged_sea$`NNO3`, method = "spearman")
+
+# Wyświetlenie wyników
+cat("Korelacja Spearmana między Mean_Count a NNO3", cor_mean_ws, "\n")
+cat("Korelacja Spearmana między Total_Count a NNO3", cor_total_ws, "\n")
+
+cor_mean_ws <- cor(merged_sea $Mean_Count, merged_sea$`NPO4`, method = "spearman")
+cor_total_ws <- cor(merged_sea $Total_Count, merged_sea$`NPO4`, method = "spearman")
+
+# Wyświetlenie wyników
+cat("Korelacja Spearmana między Mean_Count a NPO4", cor_mean_ws, "\n")
+cat("Korelacja Spearmana między Total_Count a NPO4", cor_total_ws, "\n")
+```
+
+```{r}
+
+# Połączenie danych
+merged_data <- monthly_count_summary %>%
+  inner_join(average_meteo2020, by = c("Month" = "Months")) %>%
+  inner_join(merged_sea, by = "Month") %>%  # Dodanie danych T_sea
+  mutate(Month = factor(Month, levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
+
+
+# Wykres
+ggplot(merged_data, aes(x = Month)) +
+  
+  # Pierwsza oś Y - Mean_Count.x (pełna linia)
+  geom_line(aes(y = Mean_Count.x, group = 1, color = "Microalgae and cyanobacteria"), size = 1.2) +
+  geom_point(aes(y = Mean_Count.x, color = "Microalgae and cyanobacteria"), size = 3) +
+  
+  # Druga oś Y - T_air [°C] (przerywana linia)
+  geom_line(aes(y = `Temp [°C]` * 10, group = 1, color = "T_air [°C]"), 
+            size = 1.2, linetype = "dashed") +
+  geom_point(aes(y = `Temp [°C]` * 10, color = "T_air [°C]"), size = 3) +
+  
+  # Trzecia oś Y - Wind speed [m s⁻¹] (kropkowana linia)
+  geom_line(aes(y = `Ws [m s–1]` * 20, group = 1, color = "Wind speed [m s⁻¹]"), 
+            size = 1.2, linetype = "dotted") +
+  geom_point(aes(y = `Ws [m s–1]` * 20, color = "Wind speed [m s⁻¹]"), size = 3) +
+  
+  # Skala pierwszej osi Y (dla Mean_Count) z poprawionym podpisem
+  scale_y_continuous(
+    name = expression("Average number of cells per m"^"-3"),  
+    sec.axis = sec_axis(~ . / 10, name = "Meteorological parameters"),  # Poprawiony podpis
+    expand = expansion(mult = c(0.1, 0.1))
+  ) +
+  
+  # Kolory linii i punktów + nowa legenda
+  scale_color_manual(
+    name = "Legend",
+    values = c(
+      "Microalgae and cyanobacteria" = "coral2", 
+      "T_air [°C]" = "darkorchid4", 
+      "Wind speed [m s⁻¹]" = "darkolivegreen3"
+    )
+  ) +
+  
+  # Etykiety
+  labs(
+    title = " ",
+    x = "Month"
+  ) +
+  
+  # Styl wykresu
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title.y = element_text(size = 12, color = "black"),
+    panel.grid.major = element_line(color = "grey80", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+
+```
+
+
+```{r wykres z parametrów wody}
+
+# Wykres
+ggplot(merged_sea, aes(x = Month)) +
+  
+  # Pierwsza oś Y - Mean_Count (pełna linia)
+  geom_line(aes(y = Mean_Count, group = 1, color = "Microalgae and cyanobacteria"), size = 1.2) +
+  geom_point(aes(y = Mean_Count, color = "Microalgae and cyanobacteria"), size = 3) +
+
+  # Druga oś Y - dodatkowe parametry (przeskalowane)
+  geom_line(aes(y = T_sea * 30, group = 1, color = "T_sea [°C]"), size = 1.2, linetype = "dashed") +
+  geom_point(aes(y = T_sea * 30, color = "T_sea [°C]"), size = 3) +
+  
+  geom_line(aes(y = PP * 10, group = 1, color = "PP"), size = 1.2, linetype = "dotted") +
+  geom_point(aes(y = PP * 10, color = "PP"), size = 3) +
+  
+  geom_line(aes(y = Sinice * 50, group = 1, color = "Sinice"), size = 1.2, linetype = "dotdash") +
+  geom_point(aes(y = Sinice * 50, color = "Sinice"), size = 3) +
+  
+  geom_line(aes(y = Fitoplankton * 5, group = 1, color = "Fitoplankton"), size = 1.2, linetype = "twodash") +
+  geom_point(aes(y = Fitoplankton * 5, color = "Fitoplankton"), size = 3) +
+  
+  geom_line(aes(y = NNO3, group = 1, color = "NNO3"), size = 1.2, linetype = "longdash") +
+  geom_point(aes(y = NNO3, color = "NNO3"), size = 3) +
+  
+  geom_line(aes(y = NPO4, group = 1, color = "NPO4"), size = 1.2, linetype = "solid") +
+  geom_point(aes(y = NPO4, color = "NPO4"), size = 3) +
+
+  # Skale dla osi Y
+  scale_y_continuous(
+    name = "Average number of cells per m³",  
+    sec.axis = sec_axis(~ ., name = "Meteorological parameters")
+  ) +
+
+  # Kolory linii i legenda
+  scale_color_manual(
+    name = "Legend",
+    values = c(
+      "Microalgae and cyanobacteria" = "coral2",
+      "T_sea [°C]" = "darkorchid4",
+      "PP" = "blue",
+      "Sinice" = "green",
+      "Fitoplankton" = "red",
+      "NNO3" = "brown",
+      "NPO4" = "purple"
+    )
+  ) +
+
+  # Etykiety i styl
+  labs(
+    title = "Monthly Variation of Microalgae and Environmental Parameters in 2020",
+    x = "Month"
+  ) +
+  
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title.y = element_text(size = 12, color = "black"),
+    panel.grid.major = element_line(color = "grey80", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+
+```
+
+
+```{r}
+
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+data <- merged_sea %>%
+  select(-NNO3, -NPO4)
+
+plot_param <- function(data, param_name, y_label, x_label, color, legend_labels) {
+  min1 <- min(data$Mean_Count, na.rm = TRUE)
+  max1 <- max(data$Mean_Count, na.rm = TRUE)
+  min2 <- min(data[[param_name]], na.rm = TRUE)
+  max2 <- max(data[[param_name]], na.rm = TRUE)
+  scale_factor <- (max1 - min1) / (max2 - min2)
+
+  ggplot(data, aes(x = Month)) +
+    geom_line(aes(y = Mean_Count, group = 1, color = legend_labels[1]), size = 1.2) +
+    geom_point(aes(y = Mean_Count, color = legend_labels[1]), size = 3) +
+    geom_line(aes(y = (.data[[param_name]] - min2) * scale_factor + min1, group = 1, color = legend_labels[2]), 
+              size = 1.2, linetype = "dashed") +
+    geom_point(aes(y = (.data[[param_name]] - min2) * scale_factor + min1, color = legend_labels[2]), 
+               size = 3) +
+    scale_y_continuous(
+      name = expression("Microorganisms [cells m"^{-3}*"]"),
+      sec.axis = sec_axis(~ (. - min1) / scale_factor + min2, name = y_label)
+    ) +
+    scale_x_discrete(limits = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) +  
+    scale_color_manual(
+      name = "Legend",
+      values = setNames(c("coral2", color), legend_labels)
+    ) +
+    labs(x = x_label) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+      axis.text.y = element_text(size = 12, color = "black"),
+      axis.title.y = element_text(size = 12, color = "black"),
+      axis.title.y.right = element_text(size = 12, color = "black"),
+      panel.grid.major = element_line(color = "grey80", linetype = "dashed"),
+      panel.grid.minor = element_blank(),
+      axis.line = element_line(color = "black"),
+      legend.position = "bottom",
+      legend.title = element_text(size = 12),
+      legend.text = element_text(size = 12),
+      plot.title = element_blank()  # Usuwa tytuł wykresu
+    )
+}
+
+# Tworzymy wykresy z poprawnymi nazwami osi i kolorami
+p1 <- plot_param(data, "T_sea", expression("T sea [°C]"), "Month", "deepskyblue3", c("Microorganisms count", "T sea"))
+p2 <- plot_param(data, "PP", expression("PP [mg m"^{-2}~d^{-1}*"]"), "Month", "yellow2", c("Microorganisms count", "PP"))
+p3 <- plot_param(data, "Sinice", expression("B-G Algae biomass [mg m"^{-3}*"]"), "Month", "darkorchid3", c("Microorganisms count", "B-G Algae"))
+p4 <- plot_param(data, "Fitoplankton", expression("Phytoplankton biomass [mg m"^{-3}*"]"), "Month", "darkolivegreen3", c("Microorganisms count", "Phytoplankton"))
+
+# Układamy wykresy
+final_plot <- wrap_plots(p1, p2, p3, p4, ncol = 2)
+
+# Wyświetlamy
+print(final_plot)
+
+
+ggsave(final_plot, file="/home/kiwi/airborne_algae/final_plot.tiff", height=10, width=12)
+
+#ggsav
+
+```
+
