@@ -1,12 +1,9 @@
 ```{r}
 library(readxl)
-
-#getwd()
-
-setwd("C:/Users/sliwi/Documents/GitHub/SynBaltic/Airborne/Data")
+setwd("~/airborne_algae")
 
 #dane z meteo
-plik_excel <- "C:/Users/sliwi/Documents/GitHub/SynBaltic/Airborne/Data/dane_meteo20152020.xlsx"
+plik_excel <- "~/airborne_algae/dane_meteo20152020.xlsx"
 arkusze <- excel_sheets(plik_excel)
 print(arkusze)
 
@@ -17,7 +14,7 @@ dane_2020 <- read_excel(plik_excel, sheet = arkusze[2])
 
 # Tu dane z ilością glonków i taxami 
 
-plik_excel <- "C:/Users/sliwi/Documents/GitHub/SynBaltic/Airborne/Data/dane_jakosciowe_zebrane.xlsx"
+plik_excel <- "~/airborne_algae/dane_jakosciowe_zebrane.xlsx"
 arkusze <- excel_sheets(plik_excel)
 print(arkusze)
 
@@ -73,8 +70,8 @@ Temp_2015_2020 <- dane_2015_summary %>%
 #Raczej się niżej nie przydadza, już sprawdziłam i słabo wychodzą
 
 # Wybieranie danych
-setwd("C:/Users/sliwi/Documents/GitHub/SynBaltic/Airborne/Data")
-plik_excel <- "C:/Users/sliwi/Documents/GitHub/SynBaltic/Airborne/Data/meteo_2020_full.xlsx"
+setwd("~/airborne_algae")
+plik_excel <- "~/airborne_algae/meteo_2020_full.xlsx"
 arkusze <- excel_sheets(plik_excel)
 print(arkusze)
 
@@ -163,7 +160,6 @@ p3 <- ggplot(dane_2020_summarized, aes(x = WS, y = Count)) +
 grid.arrange(p1, p2, p3, ncol = 2)
 
 ```
-
 ```{r usuwam max}
 
 
@@ -265,8 +261,8 @@ cat("Korelacja Spearmana między Count a WS:", cor_WS, "\n")
 
 
 # Wybieranie danych
-setwd("C:/Users/sliwi/Documents/GitHub/SynBaltic/Airborne/Data")
-plik_excel <- "C:/Users/sliwi/Documents/GitHub/SynBaltic/Airborne/Data/monthly_weather_average2020.xlsx"
+setwd("~/airborne_algae")
+plik_excel <- "~/airborne_algae/monthly_weather_average2020.xlsx"
 arkusze <- excel_sheets(plik_excel)
 print(arkusze)
 
@@ -315,7 +311,7 @@ plot_frame <- rbind(plot_frame, data.frame(parameter = "T_air",
                                            coefficient = spearman_test$estimate, 
                                            p = spearman_test$p.value))
 ```
-
+```{r}
 ```{r Policzone średnie dla msc parametry morskie}
 library(dplyr)
 library(lubridate)
@@ -333,6 +329,8 @@ merged_sea <- monthly_count_summary %>%
 
 # Podgląd nowego zbioru danych
 head(averaged_sea_parameter)
+
+```
 ```
 
 
@@ -381,7 +379,8 @@ print(plot_frame)
 
 ```
 
-```{r}
+
+```{r #LOlLIPOP}
 #LOlLIPOP plot
 
 
@@ -427,6 +426,8 @@ ggplot(plot_frame, aes(x = reorder(parameter, coefficient), y = coefficient, col
        x = " ",
        y = "Spearman Rank Coefficient",
        color = "p-value")
+
+
 
 ```
 
@@ -496,6 +497,68 @@ ggplot(merged_data, aes(x = Month)) +
 
 ```
 
+```{r PLOT TYLKO TEMPERATURA }
+
+library(ggplot2)
+library(dplyr)
+
+# Zakładam, że dane są już połączone:
+merged_data <- monthly_count_summary %>%
+  inner_join(average_meteo2020, by = c("Month" = "Months")) %>%
+  mutate(Month = factor(Month, levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
+
+# 🔹 Obliczamy współczynnik skalowania temperatury względem Mean_Count:
+scale_factor <- max(merged_data$Mean_Count, na.rm = TRUE) / max(merged_data$`Temp [°C]`, na.rm = TRUE)
+
+# Wykres
+ggplot(merged_data, aes(x = Month)) +
+  
+  # Liczebność mikroalg (lewa oś)
+  geom_line(aes(y = Mean_Count, group = 1, color = "Microalgae and cyanobacteria"), size = 1.2) +
+  geom_point(aes(y = Mean_Count, color = "Microalgae and cyanobacteria"), size = 3) +
+  
+  # Temperatura (prawa oś, przeskalowana)
+  geom_line(aes(y = `Temp [°C]` * scale_factor, group = 1, color = "Temperature [°C]"), 
+            size = 1.2, linetype = "dashed") +
+  geom_point(aes(y = `Temp [°C]` * scale_factor, color = "Temperature [°C]"), size = 3) +
+  
+  # Skale osi
+  scale_y_continuous(
+    name = expression("Average number of cells per m"^"-3"),
+    sec.axis = sec_axis(~ . / scale_factor, name = expression("Air temperature [°C]")),
+    expand = expansion(mult = c(0.1, 0.1))
+  ) +
+  
+  # Kolory i legenda
+  scale_color_manual(
+    name = "Legend",
+    values = c(
+      "Microalgae and cyanobacteria" = "coral2", 
+      "Temperature [°C]" = "darkorchid4"
+    )
+  ) +
+  
+  # Styl
+  labs(
+    title = "",
+    x = "Month"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title.y = element_text(size = 12, color = "black"),
+    panel.grid.major = element_line(color = "grey80", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+
+```
 
 
 ```{r}
@@ -762,135 +825,4 @@ ggsave(final_plot, file="/home/kiwi/airborne_algae/final_plot.tiff", height=10, 
 #ggsav
 
 ```
-```{r Create plot, fig.height = 10, fig.width = 12, warning = FALSE}
-
-# library(ggplot2)
-# library(dplyr)
-# library(patchwork)
-
-data <- merged_sea %>%
-  select(-NNO3, -NPO4)
-
-plot_param <- function(data, param_name, y_label, x_label, color, legend_labels) {
-  min1 <- min(data$Mean_Count, na.rm = TRUE)
-  max1 <- max(data$Mean_Count, na.rm = TRUE)
-  min2 <- min(data[[param_name]], na.rm = TRUE)
-  max2 <- max(data[[param_name]], na.rm = TRUE)
-  scale_factor <- (max1 - min1) / (max2 - min2)
-
-  ggplot(data, aes(x = Month)) +
-    geom_line(aes(y = Mean_Count, group = 1, color = legend_labels[1]), size = 0.6) +
-    geom_point(aes(y = Mean_Count, color = legend_labels[1]), size = 5) +
-    
-    geom_line(aes(y = (.data[[param_name]] - min2) * scale_factor + min1, group = 1, color = legend_labels[2]), 
-              size = 0.6, linetype = "dashed") +
-    geom_point(aes(y = (.data[[param_name]] - min2) * scale_factor + min1, color = legend_labels[2]), 
-               size = 5) +
-    
-    scale_y_continuous(breaks=seq(0,800 ,200),
-      name = expression("Airborne microorganisms [cells m"^{-3}*"]"),
-      sec.axis = sec_axis(~ (. - min1) / scale_factor + min2, name = y_label)
-    ) +
-    coord_cartesian(ylim = c(0, 800)) +
-    scale_x_discrete(limits = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) +  
-    scale_color_manual(
-      name = "Legend",
-      values = setNames(c("indianred4", color), legend_labels)
-    ) +
-    
-    
-    labs(x = x_label) +
-    theme_bw() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
-      axis.text.y = element_text(size = 12, color = "black"),
-      axis.title.y = element_text(size = 16, color = "black"),
-      axis.title.y.right = element_text(size = 16, color = "black"),
-      panel.grid.major = element_line(color = "grey80", linetype = "dashed"),
-      panel.grid.minor = element_blank(),
-      axis.line = element_line(color = "black"),
-      #legend.position = "bottom",
-              legend.background = element_rect(fill="transparent"),
-              legend.position = c(0.28,0.90),
-      #legend.title = element_text(size = 12),
-            legend.title = element_blank(),
-      legend.text = element_text(size = 12),
-      plot.title = element_blank()  # Usuwa tytuł wykresu
-    )
-}
-
-# Tworzymy wykresy z poprawnymi nazwami osi i kolorami
-p1 <- plot_param(data, "T_sea", expression("T sea [°C]"), "Month", "steelblue", c("Airborne microorganisms", "T sea"))
-p2 <- plot_param(data, "PP", expression("PP [mg m"^{-2}~d^{-1}*"]"), "Month", "lightgoldenrod3", c("Airborne microorganisms", "PP"))
-p3 <- plot_param(data, "Sinice", expression("B-G Algae biomass [mg m"^{-3}*"]"), "Month", "lightseagreen", c("Airborne microorganisms", "B-G Algae"))
-p4 <- plot_param(data, "Fitoplankton", expression("Phytoplankton biomass [mg m"^{-3}*"]"), "Month", "darkseagreen4", c("Airborne microorganisms", "Phytoplankton"))
-
-# Układamy wykresy
-final_plot <- wrap_plots(p1, p2, p3, p4, ncol = 2)
-
-# Wyświetlamy
-print(final_plot)
-
-
-#ggsave(final_plot, file="/home/kiwi/airborne_algae/final_plot.tiff", height=10, width=12)
-
-#ggsav
-
-```
-
-```{r Create plot, fig.height = 6, fig.width = 12, warning = FALSE}
-#LOlLIPOP plot
-
-
-# Aktualizacja wartości coefficient dla T_air
-plot_frame$coefficient[plot_frame$parameter == "T_air"] <- 0.755
-
-# Usuwamy NNO3, NPO4 i Rain
-plot_frame <- plot_frame[!plot_frame$parameter %in% c("NNO3", "NPO4", "Rain"), ]
-
-# Dodajemy kolory w zależności od wartości p
-plot_frame$color <- cut(plot_frame$p, 
-                         breaks = c(-Inf, 0.001, 0.01, 0.05, Inf), 
-                         labels = c("p < 0.001", "p < 0.01", "p < 0.05", "p > 0.05"))
-
-plot_frame$parameter <- gsub("Fitoplankton", "Phypl", plot_frame$parameter)
-plot_frame$parameter <- gsub("Sinice", "B-G Algae", plot_frame$parameter)
-
-
-
-
-# Tworzymy lollipop plot
-ggplot(plot_frame, aes(x = reorder(parameter, coefficient), y = coefficient, color = color)) +
-  geom_segment(aes(xend = parameter, y = 0, yend = coefficient), size = 1) +
-  geom_point(size = 5) +  # Główki lolipopów
-  scale_color_manual(values = c("p < 0.001" = "indianred4", "p < 0.01" = "orange2", "p < 0.05" = "gold", "p > 0.05" = "lightslategrey")) +
-  scale_y_continuous(breaks = seq(-1, 1, by = 0.25), limits = c(-1, 1)) +  # Wymuszenie zakresu osi Y od -1 do 1
-  coord_flip() +  # Obracamy wykres dla lepszej czytelności
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(hjust = 1, color = "black", size = 14),
-    axis.text.y = element_text(color = "black", size = 14),
-    axis.title.y = element_text(color = "black", size = 12),
-    axis.title.x = element_text(color = "black", size = 12),
-    legend.text = element_text(color = "black", size = 12),
-    #legend.title = element_text(color = "black", size = 12),
-    #legend.position = "right",
-                legend.title = element_blank(),
-              legend.background = element_rect(fill="transparent"),
-              legend.position = c(0.08,0.85),
-    
-    plot.title = element_text(color = "black", size = 12),
-    panel.grid.major = element_line(color = "grey", linetype = "dashed"),
-    panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
-    axis.line = element_line(color = "black")
-  ) +
-  labs(title = " ",
-       x = " ",
-       y = "Spearman Rank Coefficient",
-       color = "p-value")
-
-```
-
-
-
 
