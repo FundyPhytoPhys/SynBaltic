@@ -495,6 +495,66 @@ ggplot(merged_data, aes(x = Month)) +
   )
 
 ```
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Zakładam, że dane są już połączone:
+merged_data <- monthly_count_summary %>%
+  inner_join(average_meteo2020, by = c("Month" = "Months")) %>%
+  mutate(Month = factor(Month, levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
+
+# 🔹 Obliczamy współczynnik skalowania temperatury względem Mean_Count:
+scale_factor <- max(merged_data$Mean_Count, na.rm = TRUE) / max(merged_data$`Temp [°C]`, na.rm = TRUE)
+
+# Wykres
+ggplot(merged_data, aes(x = Month)) +
+  
+  # Liczebność mikroalg (lewa oś)
+  geom_line(aes(y = Mean_Count, group = 1, color = "Microalgae and cyanobacteria"), size = 1.2) +
+  geom_point(aes(y = Mean_Count, color = "Microalgae and cyanobacteria"), size = 3) +
+  
+  # Temperatura (prawa oś, przeskalowana)
+  geom_line(aes(y = `Temp [°C]` * scale_factor, group = 1, color = "Temperature [°C]"), 
+            size = 1.2, linetype = "dashed") +
+  geom_point(aes(y = `Temp [°C]` * scale_factor, color = "Temperature [°C]"), size = 3) +
+  
+  # Skale osi
+  scale_y_continuous(
+    name = expression("Average number of cells per m"^"-3"),
+    sec.axis = sec_axis(~ . / scale_factor, name = expression("Air temperature [°C]")),
+    expand = expansion(mult = c(0.1, 0.1))
+  ) +
+  
+  # Kolory i legenda
+  scale_color_manual(
+    name = "Legend",
+    values = c(
+      "Microalgae and cyanobacteria" = "coral2", 
+      "Temperature [°C]" = "darkorchid4"
+    )
+  ) +
+  
+  # Styl
+  labs(
+    title = "",
+    x = "Month"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title.y = element_text(size = 12, color = "black"),
+    panel.grid.major = element_line(color = "grey80", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+```
 
 
 
@@ -695,14 +755,156 @@ ggplot(merged_sea, aes(x = Month)) +
 ```
 
 
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Zakładam, że dane są już połączone:
+merged_data <- monthly_count_summary %>%
+  inner_join(average_meteo2020, by = c("Month" = "Months")) %>%
+  mutate(Month = factor(Month, levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
+
+# 🔹 Obliczamy współczynnik skalowania temperatury względem Mean_Count:
+scale_factor <- max(merged_data$Mean_Count, na.rm = TRUE) / max(merged_data$`Temp [°C]`, na.rm = TRUE)
+
+# Wykres
+ggplot(merged_data, aes(x = Month)) +
+  
+  # Liczebność mikroalg (lewa oś)
+  geom_line(aes(y = Mean_Count, group = 1, color = "Microalgae and cyanobacteria"), size = 1.2) +
+  geom_point(aes(y = Mean_Count, color = "Microalgae and cyanobacteria"), size = 3) +
+  
+  # Temperatura (prawa oś, przeskalowana)
+  geom_line(aes(y = `Temp [°C]` * scale_factor, group = 1, color = "Temperature [°C]"), 
+            size = 1.2, linetype = "dashed") +
+  geom_point(aes(y = `Temp [°C]` * scale_factor, color = "Temperature [°C]"), size = 3) +
+  
+  # Skale osi
+  scale_y_continuous(
+    name = expression("Average number of cells per m"^"-3"),
+    sec.axis = sec_axis(~ . / scale_factor, name = expression("Air temperature [°C]")),
+    expand = expansion(mult = c(0.1, 0.1))
+  ) +
+  
+  # Kolory i legenda
+  scale_color_manual(
+    name = "Legend",
+    values = c(
+      "Microalgae and cyanobacteria" = "coral2", 
+      "Temperature [°C]" = "darkorchid4"
+    )
+  ) +
+  
+  # Styl
+  labs(
+    title = "",
+    x = "Month"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title.y = element_text(size = 12, color = "black"),
+    panel.grid.major = element_line(color = "grey80", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+```
+```{r}
+merged_data<-merged_data %>% 
+  rename(Month_1=Month) %>% 
+    rename(Total_Count_1=Total_Count) %>% 
+    rename(Mean_Count_1=Mean_Count) 
+
+data <- merged_sea %>%
+  select(-NNO3, -NPO4)
+
+DataAll<-cbind(data, merged_data) %>% 
+  rename(T_air = `Temp [°C]`) %>% 
+  select(-c(Month_1, Total_Count_1, Mean_Count_1))
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Zakładam, że dane są już połączone:
+# DataAll <- monthly_count_summary %>%
+#   inner_join(average_meteo2020, by = c("Month" = "Months")) %>%
+#   mutate(Month = factor(Month, levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+#                                           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
+
+# 🔹 Obliczamy współczynnik skalowania temperatury względem Mean_Count:
+scale_factor <- max(DataAll$Mean_Count, na.rm = TRUE) / max(DataAll$T_air, na.rm = TRUE)
+
+# Wykres
+ggplot(DataAll, aes(x = Month)) +
+  
+  # Liczebność mikroalg (lewa oś)
+  geom_line(aes(y = Mean_Count, group = 1, color = "Microalgae and cyanobacteria"), size = 1.2) +
+  geom_point(aes(y = Mean_Count, color = "Microalgae and cyanobacteria"), size = 3) +
+  
+  # Temperatura (prawa oś, przeskalowana)
+  geom_line(aes(y = T_air * scale_factor, group = 1, color = "Temperature [°C]"), 
+            size = 1.2, linetype = "dashed") +
+  geom_point(aes(y = T_air * scale_factor, color = "Temperature [°C]"), size = 3) +
+  
+  # Skale osi
+  scale_y_continuous(
+    name = expression("Average number of cells per m"^"-3"),
+    sec.axis = sec_axis(~ . / scale_factor, name = expression("Air temperature [°C]")),
+    expand = expansion(mult = c(0.1, 0.1))
+  ) +
+  
+  # Kolory i legenda
+  scale_color_manual(
+    name = "Legend",
+    values = c(
+      "Microalgae and cyanobacteria" = "coral2", 
+      "Temperature [°C]" = "darkorchid4"
+    )
+  ) +
+  
+  # Styl
+  labs(
+    title = "",
+    x = "Month"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title.y = element_text(size = 12, color = "black"),
+    panel.grid.major = element_line(color = "grey80", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+
+```
+
+
+
+
+
+
+
 ```{r}
 
 library(ggplot2)
 library(dplyr)
 library(patchwork)
 
-data <- merged_sea %>%
-  select(-NNO3, -NPO4)
+# data <- merged_sea %>%
+#   select(-NNO3, -NPO4)
 
 plot_param <- function(data, param_name, y_label, x_label, color, legend_labels) {
   min1 <- min(data$Mean_Count, na.rm = TRUE)
@@ -768,8 +970,8 @@ ggsave(final_plot, file="/home/kiwi/airborne_algae/final_plot.tiff", height=10, 
 # library(dplyr)
 # library(patchwork)
 
-data <- merged_sea %>%
-  select(-NNO3, -NPO4)
+# dataAll <- merged_sea %>%
+#   select(-NNO3, -NPO4)
 
 plot_param <- function(data, param_name, y_label, x_label, color, legend_labels) {
   min1 <- min(data$Mean_Count, na.rm = TRUE)
@@ -837,6 +1039,85 @@ print(final_plot)
 #ggsav
 
 ```
+
+```{r Create plot, fig.height = 10, fig.width = 12, warning = FALSE}
+
+# library(ggplot2)
+# library(dplyr)
+# library(patchwork)
+
+# DataAll <- merged_sea %>%
+#   select(-NNO3, -NPO4)
+
+plot_param <- function(DataAll, param_name, y_label, x_label, color, legend_labels) {
+  min1 <- min(DataAll$Mean_Count, na.rm = TRUE)
+  max1 <- max(DataAll$Mean_Count, na.rm = TRUE)
+  min2 <- min(DataAll[[param_name]], na.rm = TRUE)
+  max2 <- max(DataAll[[param_name]], na.rm = TRUE)
+  scale_factor <- (max1 - min1) / (max2 - min2)
+
+  ggplot(DataAll, aes(x = Month)) +
+    geom_line(aes(y = Mean_Count, group = 1, color = legend_labels[1]), size = 0.6) +
+    geom_point(aes(y = Mean_Count, color = legend_labels[1]), size = 5) +
+    
+    geom_line(aes(y = (.data[[param_name]] - min2) * scale_factor + min1, group = 1, color = legend_labels[2]), 
+              size = 0.6, linetype = "dashed") +
+    geom_point(aes(y = (.data[[param_name]] - min2) * scale_factor + min1, color = legend_labels[2]), 
+               size = 5) +
+    
+    scale_y_continuous(breaks=seq(0,800 ,200),
+      name = expression("Airborne microorganisms [cells m"^{-3}*"]"),
+      sec.axis = sec_axis(~ (. - min1) / scale_factor + min2, name = y_label)
+    ) +
+    coord_cartesian(ylim = c(0, 800)) +
+    scale_x_discrete(limits = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) +  
+    scale_color_manual(
+      name = "Legend",
+      values = setNames(c("indianred4", color), legend_labels)
+    ) +
+    
+    
+    labs(x = x_label) +
+    theme_bw() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+      axis.text.y = element_text(size = 12, color = "black"),
+      axis.title.y = element_text(size = 16, color = "black"),
+      axis.title.y.right = element_text(size = 16, color = "black"),
+      panel.grid.major = element_line(color = "grey80", linetype = "dashed"),
+      panel.grid.minor = element_blank(),
+      axis.line = element_line(color = "black"),
+      #legend.position = "bottom",
+              legend.background = element_rect(fill="transparent"),
+              legend.position = c(0.28,0.90),
+      #legend.title = element_text(size = 12),
+            legend.title = element_blank(),
+      legend.text = element_text(size = 12),
+      plot.title = element_blank()  # Usuwa tytuł wykresu
+    )
+}
+
+# Tworzymy wykresy z poprawnymi nazwami osi i kolorami
+p1 <- plot_param(DataAll, "T_air", expression("T air [°C]"), "Month", "steelblue", c("Airborne microorganisms", "T air"))
+p2 <- plot_param(DataAll, "PP", expression("PP [mg m"^{-2}~d^{-1}*"]"), "Month", "lightgoldenrod3", c("Airborne microorganisms", "PP"))
+p3 <- plot_param(DataAll, "Sinice", expression("B-G Algae biomass [mg m"^{-3}*"]"), "Month", "lightseagreen", c("Airborne microorganisms", "B-G Algae"))
+p4 <- plot_param(DataAll, "Fitoplankton", expression("Phytoplankton biomass [mg m"^{-3}*"]"), "Month", "darkseagreen4", c("Airborne microorganisms", "Phytoplankton"))
+
+# Układamy wykresy
+final_plot <- wrap_plots(p1, p2, p3, p4, ncol = 2)
+
+# Wyświetlamy
+print(final_plot)
+
+
+#ggsave(final_plot, file="/home/kiwi/airborne_algae/final_plot.tiff", height=10, width=12)
+
+#ggsav
+
+```
+
+
+
 
 ```{r Create plot, fig.height = 6, fig.width = 12, warning = FALSE}
 #LOlLIPOP plot

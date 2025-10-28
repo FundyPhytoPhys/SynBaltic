@@ -78,6 +78,7 @@ print(arkusze)
 # Na tym arkuszu pracuję
 dane_2020_all <- read_excel(plik_excel, sheet = arkusze[1])
 ```
+
 ```{r}
 # Obliczenie korelacji Spearmana
 # Z danych dzień po dniu są słabiutkie korelacje
@@ -91,6 +92,7 @@ cor_Tair
 cor_WS
 
 ```
+
 ```{r}
 # Ładowanie pakietu dplyr
 library(dplyr)
@@ -107,6 +109,7 @@ dane_2020_summarized <- dane_2020_all %>%
 head(dane_2020_summarized)
 
 ```
+
 ```{r}
 # Obliczenie korelacji Spearmana
 cor_T_sea <- cor(dane_2020_summarized$Count, dane_2020_summarized$T_sea, method = "spearman", use = "complete.obs")
@@ -160,6 +163,7 @@ p3 <- ggplot(dane_2020_summarized, aes(x = WS, y = Count)) +
 grid.arrange(p1, p2, p3, ncol = 2)
 
 ```
+
 ```{r usuwam max}
 
 
