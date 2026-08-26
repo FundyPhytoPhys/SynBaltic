@@ -1,0 +1,279 @@
+---
+title: "MarineBotanyExp"
+author:
+- Sylwia Sliwinska-Wilczewska
+date: "`r format(Sys.Date())`"
+output:
+bookdown::html_document2:
+    code_folding: show
+    keep_md: yes
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 6
+    fig_caption: yes
+bibliography: BalticPhotoperiod.bib
+csl: plos-one.csl
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Set Chunk Options
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+knitr::opts_chunk$set(fig.path='Figs/')
+```
+
+# Introduction
+
+MarineBotanyExp.Rmd imports: 
+Culture_culture catalog from google sheet, Growth catalog from google sheet,
+PAMAS.....
+
+# Load libraries
+
+```{r load libraries}
+library(kableExtra)
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(broom)
+library(knitr)
+library(OneR)
+library(zoo)
+library(strucchange)
+library(dplyr)
+library(magrittr)
+library(googledrive)
+library(googlesheets4)
+library(readxl)
+library(ggspectra)
+library(ggpubr)
+library(caret)
+library(gcookbook)
+library(scales)
+```
+
+# Set Project Variables
+
+```{r set project variables}
+Project <- "Salinity"
+DataOut <- file.path("..", "Data", "CleanedData", "AllelopathyExp")
+
+PlotsPath <- file.path("..", "Output", "Plots", "AllelopathyExp")
+RDSPlotPath <- file.path("..", "Output", "PlotsRDS", "AllelopathyExp")
+RDSTablePath <- file.path("..", "Output", "TablesRDS", "AllelopathyExp")
+```
+
+# Import MetaDataCatalog
+
+Load Allelopathy_MetaDataCatalog
+```{r load local catalog, message = FALSE, warning = FALSE, echo=FALSE}
+gs4_deauth()
+
+# this is the URL or ID of a Sheet readable by anyone (with a link)
+
+CultureCatalog <- read_sheet("https://docs.google.com/spreadsheets/d/1D-dchdt_DQUj2v7TBA-RUkBCvIn4eBX9adO-E7h6xNk/edit?gid=0#gid=0") %>%
+  #mutate(Date = as.numeric(Date)) %>%
+  mutate(StartDate = ymd(`StartDate`)) %>% 
+  mutate(Measuredate = ymd(`Measuredate`)) 
+```
+
+```{r}
+
+GrowthMeta <- CultureCatalog %>%
+group_by(SampleID) %>%
+  arrange(Measuredate) %>%
+  mutate(E_days = as.numeric((Measuredate - StartDate[1]))) %>%
+ungroup() 
+```
+
+
+
+# Calculate the mean
+
+```{r}
+# GrowthMetamean<-GrowthMeta %>%
+#   group_by(SampleID) %>%
+#   mutate(meanOD750 = mean(OD750)) %>%
+#   mutate(sdOD750 = sd(OD750)) %>%
+#   ungroup()
+```
+
+
+# Create preliminary plot
+
+```{r preliminary plot}
+GrowthMeta %>%
+  #filter(Target_Species == "Cyanobium") %>% 
+  #filter(Treatment == "Stationary") %>% 
+  ggplot() +
+  geom_point(aes(x = E_days, y =OD750), show.legend = T) +
+  geom_smooth(aes(x = E_days, y =OD750), method = lm, show.legend = F, alpha = 0.1) +
+  # geom_errorbar(aes(x = Dilution, ymin = meanCount104-sdCount104, ymax = meanCount104+sdCount104)) +
+  # labs(y = "Number of cells (N" ~10^4 ~mL^-1~")", x = "Culture concentration (mL)") +
+  #scale_x_continuous(breaks=seq(0, 7, by = 1)) +
+  # coord_cartesian(ylim = c (0, 12)) +
+  # ggh4x::facet_nested(cols = vars(Strain), rows = vars(Salinity), labeller = labeller(Ex_WL = label_both, strain = label_value, WL = label_both, Photoperiod = label_both, Par_ue = label_both)) +
+  theme_bw()
+```
+
+
+
+
+---------------------------------------------- PAMAS -------------------------------------------------------
+
+# IMPORT PAMAS DATA
+
+# Set project variables and list files in the extracted folder
+
+```{r set project variables, warning = FALSE, echo = FALSE}
+# Project <- "BalticPhotoperiod"
+# zip_file <- file.path("..", "Data", "RawData", "PamasData.zip")
+# 
+# 
+# CountFiles <- unzip(zip_file, list = TRUE)
+# CountFiles <- CountFiles[grepl(".txt$", CountFiles$Name), "Name"]
+# print(CountFiles)
+# 
+# FileID <- "PAMAS"
+# FileEncode <- "UTF-8" 
+# HeaderRows <- 9
+# DelimCS <- "\t"
+```
+
+# Read fread_plus function
+
+```{r data read adds filename and cdate, warning=FALSE, message=FALSE, echo=FALSE}
+# # Define function to read and process each file
+# fread_plus <- function(Flnm, FileEncode, Delim) {
+#   con <- unz(zip_file, Flnm)
+#   
+#   # Read the file using read.table
+#   data <- read.table(con, skip = HeaderRows, encoding = FileEncode, sep = Delim, header = TRUE)
+#   
+#   # Use tryCatch to handle errors during the closing of the connection
+#   tryCatch(
+#     close(con),
+#     error = function(e) {
+#       warning("Error closing connection: ", e$message)
+#     })
+#   
+#   data <- data %>%
+#     mutate(Filename = Flnm, CDateTime = ymd_hms(file.info(zip_file)$ctime)) 
+#   return(data)
+# }
+# 
+# # Use map_df to read and process all files in CountFiles
+# CountTidy <- CountFiles %>%
+#   map_df(~fread_plus(Flnm = ., FileEncode = FileEncode, Delim = DelimCS))
+```
+
+# Clean up the filename column
+
+```{r clean up df, warning = FALSE, echo = FALSE}
+# CountTidy <- CountTidy %>% 
+#   mutate(Filename = str_remove(string = Filename, pattern = ".txt")) %>%
+#   mutate(Filename = str_remove(string = Filename, pattern = "../PamasData/")) %>%
+#   separate(Filename, into = c("Date", "Strain", "Dilution", "Device"), sep = "([\\/\\/\\_\\_\\_\\_])", remove = FALSE) %>% 
+#   mutate(Date = as.double(`Date`)) %>%
+#   mutate(Date = ymd_hm(`Date`))
+```
+
+# Tidy PAMAS df
+
+```{r tidy TargetPamasData, warning = FALSE, echo = FALSE}
+
+# NewNames <- c("PAMASDate", "Time", ">0.70",">0.80", ">0.90", ">1.00", ">1.20", ">1.50", ">2.00",">3.00", ">4.00", ">5.00", ">6.00", ">7.00", ">10.00", ">12.00",
+# ">15.00",">20.00", "Filename", "Date","Strain", "Dilution", "Device", "cdatetime")
+# 
+# OldNames <- colnames(CountTidy)
+# 
+# PamasTidy <- CountTidy %>%
+# rename_with(~NewNames[which(OldNames == .x)], .cols = OldNames) %>%
+#   mutate(datetime = paste(PAMASDate, Time),
+#          datetime = mdy_hms(datetime))
+```
+
+# Tidy PAMAS df
+
+```{r}
+# PamasTidy <- PamasTidy %>%
+# mutate(`S0.7` = as.numeric(`>0.70`) - as.numeric(`>0.80`),
+#        `S0.8` = as.numeric(`>0.80`) - as.numeric(`>0.90`),
+#        `S0.9` = as.numeric(`>0.90`) - as.numeric(`>1.00`),
+#        `S1.0` = as.numeric(`>1.00`) - as.numeric(`>1.20`),
+#        `S1.2` = as.numeric(`>1.20`) - as.numeric(`>1.50`),
+#        `S1.5` = as.numeric(`>1.50`) - as.numeric(`>2.00`),
+#        `S2.0` = as.numeric(`>2.00`) - as.numeric(`>3.00`),
+#        `S3.0` = as.numeric(`>3.00`) - as.numeric(`>4.00`),
+#        `S4.0` = as.numeric(`>4.00`) - as.numeric(`>5.00`),
+#        `S5.0` = as.numeric(`>5.00`) - as.numeric(`>6.00`),
+#        `S6.0` = as.numeric(`>6.00`) - as.numeric(`>7.00`),
+#        `S7.0` = as.numeric(`>7.00`) - as.numeric(`>10.00`),
+#        `S10.0` = as.numeric(`>10.00`) - as.numeric(`>12.00`),
+#        `S12.0` = as.numeric(`>12.00`) - as.numeric(`>15.00`),
+#        `S15.0` = as.numeric(`>15.00`) - as.numeric(`>20.00`),
+#        `S20.0` = as.numeric(`>20.00`))
+# 
+# PamasTidy <- PamasTidy %>%
+#   pivot_longer(., cols = c("S0.7", "S0.8", "S0.9", "S1.0", "S1.2", "S1.5", "S2.0", "S3.0", "S4.0", "S5.0", "S6.0", "S7.0", "S10.0", "S12.0", "S15.0", "S20.0"), names_to = "CellSize_um", values_to = "Count") %>%
+#   mutate_at("CellSize_um", str_replace, "S", "") %>%
+#   mutate(CellSize_um = as.numeric(CellSize_um)) %>%
+#   group_by(CellSize_um, Strain, Dilution) %>%
+#   mutate(meanCount = mean(Count), 
+#          sdCount = sd(Count)) %>%
+#   ungroup() %>%
+#   select(c(PAMASDate, Filename, Date, Strain, Dilution, cdatetime, CellSize_um, Count, meanCount, sdCount))
+```
+
+# Rename variables for consistency
+
+```{r}
+# PamasTidy<-PamasTidy %>% 
+#   rename(ObsDate=Date) %>%
+#   rename(FilenamePAMAS=Filename) %>% 
+#   select(-c(cdatetime, PAMASDate))
+```
+
+# Create preliminary plot
+
+```{r preliminary plot}
+# PamasTidy %>%
+#   mutate(meanCount104 = meanCount/10000) %>%
+#   mutate(sdCount104 = sdCount/10000) %>%
+#   filter(CellSize_um < 4) %>% 
+#   ggplot() +
+#   geom_point(aes(x = Dilution, y =meanCount104, label = Strain)) +
+#   geom_errorbar(aes(x = Dilution, ymin = meanCount104-sdCount104, ymax = meanCount104+sdCount104)) +
+#   labs(y = "Number of cells (N" ~10^4 ~mL^-1~")", x = "Culture concentration (mL)") +
+#   scale_y_continuous(breaks=seq(0, 12, by = 4)) +
+#   coord_cartesian(ylim = c (0, 12)) +
+#   ggh4x::facet_nested(rows = vars(CellSize_um), cols = vars(Strain), labeller = labeller(Ex_WL = label_both, strain = label_value, WL = label_both, Photoperiod = label_both, Par_ue = label_both)) +
+#   theme_bw()
+```
+
+
+
+
+# Save Rds for further analysis if needed
+
+```{r save rds}
+# saveRDS(PigmentsClarioOlisCorr, file.path(DataOut, paste(Project, "Imported_PigmentsClarioOlisCorrData.Rds", sep = "_"), fsep = .Platform$file.sep), ascii = FALSE, version = NULL, compress = "xz", refhook = NULL)
+```
+
+
+
+# Correlations from Polish flowcytometer (BD Accuri) and Polish Spec if needed
+
+```{r}
+# GrowthClarioN <- GrowthClario %>%
+#   mutate(OD750N = case_when(
+#           Strain == 'BA77G' ~ 5766620.03*OD750+5146.44,
+#          Strain == 'BA56G' ~ 815627.77*OD750-6499.89, 
+#          Strain == 'BA48R' ~ 110516351.55*OD750-568505.87,
+#          Strain == 'BA127R' ~ 124271003.22*OD750-1691760.02))
+```
+
+
